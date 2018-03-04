@@ -1,5 +1,6 @@
 //Create a Pixi Application
 import { Bump } from './bump.js';
+import{gamepads, pollGamepads, setGamepadConnectionEvents} from './controllers.js';
 
 
 let app = new PIXI.Application({
@@ -19,7 +20,7 @@ let b = new Bump(PIXI);
 
 window.onload = function() {
     app.renderer.backgroundColor = 0xd3cb81;
-
+	setGamepadConnectionEvents();
     document.body.appendChild(app.view);
     setup();
 }
@@ -44,5 +45,5 @@ function loadSprites() {
 }
 
 function gameLoop(delta) {
-
+	pollGamepads();
 }

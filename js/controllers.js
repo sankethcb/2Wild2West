@@ -1,8 +1,26 @@
-export {gamepads, setGamepadConnectionEvents};
+export {gamepads, pollGamepads, setGamepadConnectionEvents};
 
 let gamepads = [];
 
 let numPads = 0;
+
+function pollGamepads() 
+{
+	//Handle both prefixed version and standard version of getGamepads
+	let pollPads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
+
+	for (let i = 0; i < pollPads.length; i++) 
+	{
+		for(let j = 0; j < numPads; j++)
+		{
+			if(pollPads[i] != null && gamepads[j].index == pollPads[i].index)
+			{
+				gamepads[j] = pollPads[i]; //Update the matching gamepad
+				break;
+			}
+		}
+	}
+}
 
 //Handles gamepads being connected or disconnected
 function gamepadHandler(event, connecting)
