@@ -16,33 +16,32 @@ app.renderer.autoResize = true;
 app.renderer.resize(window.innerWidth, window.innerHeight);
 
 let b = new Bump(PIXI);
+let TextureCache = PIXI.utils.TextureCache
+let texture = TextureCache["./img/hat.png"];
+
 
 window.onload = function() {
-    app.renderer.backgroundColor = 0xd3cb81;
-
     document.body.appendChild(app.view);
+    app.renderer.backgroundColor = 0xd3cb81;
     setup();
 }
 
 function setup() {
-    loadSprites();
+    PIXI.loader
+        .add("./img/hat.png")
+        .load(loadSprites);
     app.ticker.add(delta => gameLoop(delta))
 }
 
 function loadSprites() {
 
-    // TextureCache = PIXI.utils.Texture
+    let hat = new PIXI.Sprite(PIXI.loader.resources["./img/hat.png"].texture);
+    // hat.texture = texture;
 
-    let circle = new PIXI.Graphics();
-    circle.beginFill(0x00000);
-    circle.drawCircle(0, 0, 50);
-    circle.endFill();
-    circle.x = app.width / 2;
-    circle.y = app.height / 2;
-    app.stage.addChild(circle);
+    app.stage.addChild(hat);
 
 }
 
 function gameLoop(delta) {
-
+    app.renderer.render(app.stage);
 }
