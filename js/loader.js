@@ -31,17 +31,19 @@ window.onload = function() {
 
 function setup() {
 	PIXI.loader
-		.add("./img/hat.png")
+		.add('hat', "./img/hat.png")
+		.add('crosshair', './img/crosshair.png')
 		.load(onLoadAssets);
 }
 
 function onLoadAssets() {
+	p1 = new Cowboy(1);
+	p2 = new Cowboy(2);
 
-	let hat = new PIXI.Sprite(PIXI.loader.resources["./img/hat.png"].texture);
-
-	p1 = new Cowboy(hat, 1);
-
-	app.stage.addChild(hat);
+	app.stage.addChild(p1.sprite);
+	app.stage.addChild(p2.sprite);
+	
+	console.log(gamepads);
 	
 	app.ticker.add(delta => gameLoop(delta))
 }
@@ -50,5 +52,6 @@ function gameLoop(delta) {
 	app.renderer.render(app.stage);
 	pollGamepads();
 	
-		p1.update(delta);
+	p1.update(delta);
+	p2.update(delta);
 }

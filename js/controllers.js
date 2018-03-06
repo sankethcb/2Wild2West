@@ -8,7 +8,7 @@ function pollGamepads()
 {
 	//Handle both prefixed version and standard version of getGamepads
 	let pollPads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
-
+	
 	for (let i = 0; i < pollPads.length; i++) 
 	{
 		for(let j = 0; j < numPads; j++)
@@ -35,7 +35,7 @@ function gamepadHandler(event, connecting)
 			{
 				gamepads[numPads] = eventPad;
 				numPads++;
-				console.log(eventPad.id + ' connected.');
+				console.log(eventPad.id + ' connected at index ' + eventPad.index + '.');
 			}
 			else
 			{
