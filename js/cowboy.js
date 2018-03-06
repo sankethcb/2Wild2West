@@ -1,9 +1,9 @@
-import {gamepads as gp} from './controllers.js';
+import {gamepads as gp, applyDeadzone} from './controllers.js';
 import {b} from './loader.js';
 export {Cowboy};
 
 //Variables to modify both players behavior
-let maxSpeed = 2;
+let maxSpeed = 8;
 //let deadzone = 
 
 class Cowboy 
@@ -27,25 +27,14 @@ class Cowboy
 	//Update the cowboy object
 	update(delta)
 	{
-		this.fwd.x = this.gamepad.axes[0];
-		this.fwd.y = this.gamepad.axes[1];
+		this.fwd.x = applyDeadzone(this.gamepad.axes[0], 0.10);
+		this.fwd.y = applyDeadzone(this.gamepad.axes[1], 0.10);;
 
-		this.velocity.x += this.fwd.x * maxSpeed;
-		this.velocity.y += this.fwd.y * maxSpeed;
+		this.velocity.x = this.fwd.x * maxSpeed;
+		this.velocity.y = this.fwd.y * maxSpeed;
 		
 		this.sprite.position.x += this.velocity.x * delta;
 		this.sprite.position.y += this.velocity.y * delta;
-		console.log(delta); //Why is delta 1?
 
 	}
 }
-
-/*
-var applyDeadzone = function(number, threshold){
-   percentage = (Math.abs(number) - threshold) / (1 - threshold);
-
-   if(percentage < 0)
-      percentage = 0;
-
-   return percentage * (number > 0 ? 1 : -1);
-}*/

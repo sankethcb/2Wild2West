@@ -1,4 +1,4 @@
-export {gamepads, pollGamepads, setGamepadConnectionEvents};
+export {gamepads, pollGamepads, setGamepadConnectionEvents, applyDeadzone};
 
 let gamepads = [];
 
@@ -69,3 +69,13 @@ function setGamepadConnectionEvents()
 	window.addEventListener("gamepaddisconnected", function(e) { gamepadHandler(e, false); }, false);
 }
 
+//Utility fucntion to apply a deadzone on a number
+function applyDeadzone(number, threshold)
+{
+	let percentage = (Math.abs(number) - threshold) / (1 - threshold);
+
+	if(percentage < 0)
+		percentage = 0;
+
+	return percentage * (number > 0 ? 1 : -1);
+}

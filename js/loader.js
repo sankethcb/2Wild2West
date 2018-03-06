@@ -32,22 +32,23 @@ window.onload = function() {
 function setup() {
 	PIXI.loader
 		.add("./img/hat.png")
-		.load(loadSprites);
-	app.ticker.add(delta => gameLoop(delta))
+		.load(onLoadAssets);
 }
 
-function loadSprites() {
+function onLoadAssets() {
 
 	let hat = new PIXI.Sprite(PIXI.loader.resources["./img/hat.png"].texture);
 
 	p1 = new Cowboy(hat, 1);
 
 	app.stage.addChild(hat);
-
+	
+	app.ticker.add(delta => gameLoop(delta))
 }
 
 function gameLoop(delta) {
 	app.renderer.render(app.stage);
 	pollGamepads();
-	p1.update(delta);
+	
+		p1.update(delta);
 }
