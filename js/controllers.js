@@ -35,7 +35,7 @@ function gamepadHandler(event, connecting)
 			{
 				gamepads[numPads] = eventPad;
 				numPads++;
-				console.log('Controller connected.');
+				console.log(eventPad.id + ' connected.');
 			}
 			else
 			{
@@ -44,7 +44,7 @@ function gamepadHandler(event, connecting)
 		}
 		else
 		{
-			console.log('This controller does not have a standard mapping.');
+			console.log(eventPad.id + ' does not have a standard mapping.');
 		}
 	}
 	else //Disconnecting
