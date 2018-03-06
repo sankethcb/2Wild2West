@@ -1,5 +1,5 @@
 import {gamepads as gp, applyDeadzone} from './controllers.js';
-import {b} from './loader.js';
+import {b, app} from './loader.js';
 export {Cowboy};
 
 //Variables to modify both players' behavior
@@ -17,13 +17,13 @@ class Cowboy
 		this.sprite.position.x = 50;
 		this.sprite.position.y = 30;
 		b.addCollisionProperties(this.sprite);
-		
+
 		//this.crosshair = crossH;
 		this.crosshair = new PIXI.Sprite(PIXI.loader.resources['crosshair'].texture);
 		this.crosshair.anchor.set(0.5, 0.5);
-		
+
 		this.sprite.addChild(this.crosshair);
-		
+
 		this.playerNum = pNum;
 		this.gamepad = gp[pNum - 1];
 
@@ -44,15 +44,15 @@ class Cowboy
 
 		this.velocity.x = this.fwd.x * maxSpeed;
 		this.velocity.y = this.fwd.y * maxSpeed;
-		
+
 		this.sprite.position.x += this.velocity.x * delta;
 		this.sprite.position.y += this.velocity.y * delta;
-		
+
 		//Crosshair position
 		this.crosshair.position.x = applyDeadzone(this.gamepad.axes[2], deadzone) * crossRange;
-		
+
 		this.crosshair.position.y = applyDeadzone(this.gamepad.axes[3], deadzone) * crossRange;
-		
+
 		if(this.crosshair.position.x == 0 && this.crosshair.position.y == 0)
 		{
 			this.crosshair.visible = false;
@@ -61,11 +61,31 @@ class Cowboy
 		{
 			this.crosshair.visible = true;	
 		}
+
+		this.keepInBounds();
 	}
-	
+
+	//Keeps the cowboy in bounds
 	keepInBounds()
 	{
-		let x = this.position.x;
-		let y = this.position.y;
+		let x = this.sprite.position.x;
+		let y = this.sprite.position.y;
+		let spriteHalfWidth = this.sprite.width / 2;
+		let spriteHalfHeight = this.sprite.height / 2;
+		let stageWidth = app.renderer.width;
+		let stageHeight = app.renderer.height;
+
+		if(x - spriteHalfWidth <= 0)
+			this.sprite.position.x = spriteHalfWidth;
+
+		if(x + spriteHalfWidth >= stageWidth)
+			this.sprite.position.x = stageWidth - spriteHalfWidth;
+		
+		//Add the same padding that the other bounds have
+		if(y + spriteHalfHeight >= stageHeight - 10)
+			this.sprite.position.y = stageHeight - spriteHalfHeight - 10;
+
+		if(y - spriteHalfHeight <= 0)
+			this.sprite.position.y = spriteHalfHeight;
 	}
 }

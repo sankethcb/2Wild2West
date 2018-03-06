@@ -1,7 +1,7 @@
 import {Bump} from './bump.js';
-import {gamepads, pollGamepads, setGamepadConnectionEvents} from './controllers.js';
+import {pollGamepads, setGamepadConnectionEvents} from './controllers.js';
 import {Cowboy} from './cowboy.js';
-export {b};
+export {b, app};
 
 let p1, p2; //The two players
 
@@ -42,8 +42,6 @@ function onLoadAssets() {
 
 	app.stage.addChild(p1.sprite);
 	app.stage.addChild(p2.sprite);
-	
-	console.log(gamepads);
 	
 	app.ticker.add(delta => gameLoop(delta))
 }
