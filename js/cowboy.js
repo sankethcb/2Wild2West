@@ -11,14 +11,12 @@ class Cowboy
 {
 	constructor(pNum) 
 	{
-		//this.sprite = sprite;
 		this.sprite = new PIXI.Sprite(PIXI.loader.resources["hat"].texture);
 		this.sprite.anchor.set(0.5, 0.5);
 		this.sprite.position.x = 50;
 		this.sprite.position.y = 30;
 		b.addCollisionProperties(this.sprite);
 
-		//this.crosshair = crossH;
 		this.crosshair = new PIXI.Sprite(PIXI.loader.resources['crosshair'].texture);
 		this.crosshair.anchor.set(0.5, 0.5);
 
@@ -38,6 +36,11 @@ class Cowboy
 	//Update the cowboy object
 	update(delta)
 	{
+		if(delta === undefined)
+		{
+			return;
+		}
+
 		//Movement
 		this.fwd.x = applyDeadzone(this.gamepad.axes[0], deadzone);
 		this.fwd.y = applyDeadzone(this.gamepad.axes[1], deadzone);
@@ -80,7 +83,7 @@ class Cowboy
 
 		if(x + spriteHalfWidth >= stageWidth)
 			this.sprite.position.x = stageWidth - spriteHalfWidth;
-		
+
 		//Add the same padding that the other bounds have
 		if(y + spriteHalfHeight >= stageHeight - 10)
 			this.sprite.position.y = stageHeight - spriteHalfHeight - 10;

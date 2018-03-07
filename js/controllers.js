@@ -1,4 +1,4 @@
-export {gamepads, pollGamepads, setGamepadConnectionEvents, applyDeadzone};
+export {gamepads, pollGamepads, setGamepadConnectionEvents, applyDeadzone, numPads};
 
 let gamepads = [];
 
