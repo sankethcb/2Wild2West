@@ -1,6 +1,7 @@
 import { gamepads as gp, applyDeadzone } from './controllers.js';
 import { bullet } from './bullet.js';
-import { b, app, AddBullet } from './loader.js';
+import {app} from './loader.js';
+import {b, AddBullet} from './manager.js';
 export { Cowboy };
 
 //Variables to modify both players' behavior
