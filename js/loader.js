@@ -1,5 +1,5 @@
-import {startManager, gameLoop} from './manager.js';
-export {app};
+import { startManager, gameLoop } from './manager.js';
+export { app };
 
 let app = new PIXI.Application({
     width: 256,

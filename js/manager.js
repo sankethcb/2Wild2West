@@ -1,6 +1,6 @@
-export {startManager, gameLoop, b, AddBullet};
+export { startManager, gameLoop, b, AddBullet };
 import { Bump } from './bump.js';
-import  {app} from './loader.js';
+import { app } from './loader.js';
 import { pollGamepads, setGamepadConnectionEvents, numPads } from './controllers.js';
 import { Cowboy } from './cowboy.js';
 
@@ -8,6 +8,7 @@ import { Cowboy } from './cowboy.js';
 let state = menu;
 let players = []; //Holds the player objects
 let bulletList = []; //Holds the active bullets present in the game
+let mapList = []; //Holds the map *sprites*
 
 //UI Variables
 let controlText;
@@ -40,7 +41,7 @@ function play(delta) {
         bulletList[i].move(delta);
 
     }
-
+    Collisions();
 }
 
 //The loop when at the menu
@@ -144,4 +145,51 @@ function InitGame(numPlayers) {
 function AddBullet(bullet) {
     bulletList.push(bullet);
     gameContainer.addChild(bullet.sprite);
+}
+
+function RemoveBullet(bullet) {
+    let index = bulletList.indexOf(bullet);
+    if (index != -1) {
+        gameContainer.removeChild(bullet.sprite);
+        bulletList.splice(index, 1);
+        bullet = null;
+    }
+
+}
+
+
+//Game Collisions
+function Collisions() {
+
+    if (players[1] != null) {
+        //Player - Player intersection
+        b.hit(players[0].sprite, players[1].sprite, true);
+        //Player - map intersection
+        b.hit(players[1].sprite, mapList, true);
+    }
+    //Player - map intersection
+    b.hit(players[0].sprite, mapList, true);
+
+
+
+
+    //Player  - bullet collisions
+    for (var i = 0; i < bulletList.length; i++) {
+        if (bulletList[i].playerNum == 2) {
+            if (b.hit(players[0].sprite, bulletList[i].sprite)) {
+                RemoveBullet(bulletList[i]);
+                players[0].HP--;
+            }
+        } else if (bulletList[i].playerNum == 1) {
+            if (players[1] != null)
+                if (b.hit(players[1].sprite, bulletList[i].sprite)) {
+                    RemoveBullet(bulletList[i]);
+                    players[1].HP--;
+                }
+        }
+    }
+
+
+
+
 }

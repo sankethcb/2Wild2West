@@ -5,7 +5,7 @@ class bullet {
         this.sprite = new PIXI.Sprite(PIXI.loader.resources["bullet"].texture);
         this.sprite.anchor.set(0.5, 0.5);
         this.fwd = bf;
-
+        this.playerNum = cowboy.playerNum;
         this.velocity = {};
         this.velocity.x = 0;
         this.velocity.y = 0;
@@ -15,7 +15,7 @@ class bullet {
         this.sprite.position = cowboy.sprite.position;
         this.sprite.position.x += cowboy.sprite.width / 2 * this.fwd.x;
         this.sprite.position.y += cowboy.sprite.height / 2 * this.fwd.y;
-        console.log(this.sprite.position);
+
         this.rotateSprite();
 
     }

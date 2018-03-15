@@ -1,7 +1,7 @@
 import { gamepads as gp, applyDeadzone } from './controllers.js';
 import { bullet } from './bullet.js';
-import {app} from './loader.js';
-import {b, AddBullet} from './manager.js';
+import { app } from './loader.js';
+import { b, AddBullet } from './manager.js';
 export { Cowboy };
 
 //Variables to modify both players' behavior
@@ -13,6 +13,7 @@ let lastState = 0;
 class Cowboy {
     constructor(pNum) {
         this.sprite = new PIXI.Sprite(PIXI.loader.resources["hat"].texture);
+        this.HP = 3;
         this.sprite.anchor.set(0.5, 0.5);
         this.sprite.position.x = 50;
         this.sprite.position.y = 30;
