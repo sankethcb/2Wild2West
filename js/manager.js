@@ -164,6 +164,7 @@ function Collisions() {
     if (players[1] != null) {
         //Player - Player intersection
         b.hit(players[0].sprite, players[1].sprite, true);
+        b.hit(players[1].sprite, players[0].sprite, true);
         //Player - map intersection
         b.hit(players[1].sprite, mapList, true);
     }
