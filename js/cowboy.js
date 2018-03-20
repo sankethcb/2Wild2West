@@ -136,8 +136,6 @@ class Cowboy {
 			this.color + '_' + currDirection + '_' + action + this.frameNum
 		].texture;
 
-		if(this.playerNum == 1){console.log(action);}
-
 		this.currFrameTime += delta;
 
 		//Should the next frame cycle in?
