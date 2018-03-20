@@ -32,8 +32,8 @@ class Cowboy {
 			this.color = 'white';
 
 			//Set spawn position and direction
-			this.sprite.position.x = 50;
-			this.sprite.position.y = 300;
+			this.sprite.position.x = 100;
+			this.sprite.position.y = app.renderer.height/2;
 			this.lastDirection = 'E';
 			
 			this.crosshair.texture = PIXI.loader.resources['white crosshair'].texture;
@@ -44,8 +44,8 @@ class Cowboy {
 		} else {
 			this.color = 'black';
 
-			this.sprite.position.x = 300;
-			this.sprite.position.y = 300;
+			this.sprite.position.x = app.renderer.width - 100;
+			this.sprite.position.y = app.renderer.height/2;
 			this.lastDirection = 'W';
 
 			this.crosshair.texture = PIXI.loader.resources['black crosshair'].texture;

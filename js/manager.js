@@ -78,7 +78,6 @@ function menu(delta) {
 
 
 function SwitchState(nextState) {
-	console.log(nextState);
 	switch (nextState) {
 		case play:
 			//Don't allow the game to start if there are no gamepads
