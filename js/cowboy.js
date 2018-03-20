@@ -30,15 +30,14 @@ class Cowboy {
         this.gamepad = gp[pNum - 1];
 
         //Set color, position, and texture off player number
-        if(this.playerNum == 1){
+        if (this.playerNum == 1) {
             this.color = 'white';
 
             //Set spawn position and direction
             this.sprite.position.x = 50;
             this.sprite.position.y = 300;
             this.lastDirection = 'E';
-        }
-        else{
+        } else {
             this.color = 'black';
 
             this.sprite.position.x = 300;
@@ -74,26 +73,28 @@ class Cowboy {
     update(delta) {
         if (delta === undefined)
             return;
-        
-        if(this.gamepad === undefined)
+
+        if (this.gamepad === undefined)
             return;
 
         //Movement
-        this.fwd.x = applyDeadzone(this.gamepad.axes[0], deadzone);
-        this.fwd.y = applyDeadzone(this.gamepad.axes[1], deadzone);
+        if (!this.isShooting) {
+            this.fwd.x = applyDeadzone(this.gamepad.axes[0], deadzone);
+            this.fwd.y = applyDeadzone(this.gamepad.axes[1], deadzone);
 
-        this.velocity.x = this.fwd.x * maxSpeed;
-        this.velocity.y = this.fwd.y * maxSpeed;
+            this.velocity.x = this.fwd.x * maxSpeed;
+            this.velocity.y = this.fwd.y * maxSpeed;
 
-        this.sprite.position.x += this.velocity.x * delta;
-        this.sprite.position.y += this.velocity.y * delta;
+            this.sprite.position.x += this.velocity.x * delta;
+            this.sprite.position.y += this.velocity.y * delta;
+        }
 
         //Crosshair position
         this.crosshair.position.x = applyDeadzone(this.gamepad.axes[2], deadzone) * crossRange;
 
         this.crosshair.position.y = applyDeadzone(this.gamepad.axes[3], deadzone) * crossRange;
 
-        if (this.crosshair.position.x == 0 && this.crosshair.position.y == 0) { 
+        if (this.crosshair.position.x == 0 && this.crosshair.position.y == 0) {
             this.crosshair.visible = false;
             this.isAiming = false;
         } else {
@@ -114,26 +115,24 @@ class Cowboy {
         this.keepInBounds();
     }
 
-    animate(delta){
+    animate(delta) {
         //Find what direction the desired stick is in
         let currDirection = '';
         let action; //The action the cowboy is doing
 
-        if(this.isShooting){
+        if (this.isShooting) {
             action = 'shoot';
             currDirection = this.getCardinalStickDirection(3, 2);
-            if(currDirection == '')
+            if (currDirection == '')
                 currDirection = this.lastDirection;
-        }
-        else{
+        } else {
             currDirection = this.getCardinalStickDirection(1, 0);
 
-            if(currDirection == ''){
+            if (currDirection == '') {
                 action = 'idle';
                 this.frameNum = 0;
                 currDirection = this.lastDirection;
-            }
-            else{
+            } else {
                 this.lastDirection = currDirection;
                 action = 'walk';
             }
@@ -147,12 +146,11 @@ class Cowboy {
         this.currFrameTime += delta;
 
         //Should the next frame cycle in?
-        if(this.currFrameTime >= 60/animationFPS){
-            if(this.frameNum <= 0){
+        if (this.currFrameTime >= 60 / animationFPS) {
+            if (this.frameNum <= 0) {
                 this.frameNum = 9; //Reset cycle back to top
                 this.isShooting = false; //Reset shooting
-            }
-            else{
+            } else {
                 this.frameNum--;
             }
 
@@ -194,17 +192,17 @@ class Cowboy {
     }
 
     //Gets cardinal direction of analog stick's vertical and horizontal axes
-    getCardinalStickDirection(vertical, horizontal){
+    getCardinalStickDirection(vertical, horizontal) {
         let horizontalDir = '';
         let verticalDir = '';
 
-        if(applyDeadzone(this.gamepad.axes[vertical], deadzone) > 0)
+        if (applyDeadzone(this.gamepad.axes[vertical], deadzone) > 0)
             verticalDir = 'S';
-        if(applyDeadzone(this.gamepad.axes[vertical], deadzone) < 0)
+        if (applyDeadzone(this.gamepad.axes[vertical], deadzone) < 0)
             verticalDir = 'N';
-        if(applyDeadzone(this.gamepad.axes[horizontal], deadzone) > 0)
+        if (applyDeadzone(this.gamepad.axes[horizontal], deadzone) > 0)
             horizontalDir = 'E';
-        if(applyDeadzone(this.gamepad.axes[horizontal], deadzone) < 0)
+        if (applyDeadzone(this.gamepad.axes[horizontal], deadzone) < 0)
             horizontalDir = 'W';
 
         return verticalDir + horizontalDir;
