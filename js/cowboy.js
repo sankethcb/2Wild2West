@@ -19,7 +19,7 @@ class Cowboy {
 		b.addCollisionProperties(this.sprite);
 
 		//Set up crosshair sprite
-		this.crosshair = new PIXI.Sprite(PIXI.loader.resources['crosshair'].texture);
+		this.crosshair = new PIXI.Sprite();
 		this.crosshair.anchor.set(0.5, 0.5);
 		this.sprite.addChild(this.crosshair);
 
@@ -35,6 +35,8 @@ class Cowboy {
 			this.sprite.position.x = 50;
 			this.sprite.position.y = 300;
 			this.lastDirection = 'E';
+			
+			this.crosshair.texture = PIXI.loader.resources['white crosshair'].texture;
 
 			this.shootSound = new Howl({
 				src: ['./audio/shoot1.mp3']
@@ -45,6 +47,8 @@ class Cowboy {
 			this.sprite.position.x = 300;
 			this.sprite.position.y = 300;
 			this.lastDirection = 'W';
+
+			this.crosshair.texture = PIXI.loader.resources['black crosshair'].texture;
 
 			this.shootSound = new Howl({
 				src: ['./audio/shoot2.mp3']
