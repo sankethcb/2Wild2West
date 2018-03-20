@@ -4,6 +4,9 @@ import { app } from './loader.js';
 import { pollGamepads, setGamepadConnectionEvents, numPads } from './controllers.js';
 import { Cowboy } from './cowboy.js';
 
+//Debug variables
+const SKIP_MENU = false; //Skips over the menu whether or not controllers are connected
+
 //Core game variables
 let state = menu;
 let players = []; //Holds the player objects
@@ -22,6 +25,14 @@ let b = new Bump(PIXI);
 function startManager() {
     setGamepadConnectionEvents();
     app.ticker.add(delta => gameLoop(delta))
+
+    if(SKIP_MENU)
+    {
+        state = play;
+        InitGame(2);
+        return;
+    }
+
     InitMenu();
 }
 
@@ -154,7 +165,6 @@ function RemoveBullet(bullet) {
         bulletList.splice(index, 1);
         bullet = null;
     }
-
 }
 
 
