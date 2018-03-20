@@ -9,203 +9,218 @@ let maxSpeed = 8;
 let deadzone = 0.15;
 let crossRange = 125;
 let animationFPS = 15;
-let p1Spawn = [50, 300];
-let p2Spawn = [300, 300];
 
 class Cowboy {
-    constructor(pNum) {
-        //Sprite settings
-        this.sprite = new PIXI.Sprite();
-        this.HP = 3;
-        this.sprite.anchor.set(0.5, 0.5);
-        b.addCollisionProperties(this.sprite);
+	constructor(pNum) {
+		//Sprite settings
+		this.sprite = new PIXI.Sprite();
+		this.HP = 3;
+		this.sprite.anchor.set(0.5, 0.5);
+		b.addCollisionProperties(this.sprite);
 
-        //Set up crosshair sprite
-        this.crosshair = new PIXI.Sprite(PIXI.loader.resources['crosshair'].texture);
-        this.crosshair.anchor.set(0.5, 0.5);
-        this.sprite.addChild(this.crosshair);
+		//Set up crosshair sprite
+		this.crosshair = new PIXI.Sprite(PIXI.loader.resources['crosshair'].texture);
+		this.crosshair.anchor.set(0.5, 0.5);
+		this.sprite.addChild(this.crosshair);
 
-        //Player number and color
-        this.playerNum = pNum;
-        this.gamepad = gp[pNum - 1];
+		//Player number and color
+		this.playerNum = pNum;
+		this.gamepad = gp[pNum - 1];
 
-        //Set color, position, and texture off player number
-        if (this.playerNum == 1) {
-            this.color = 'white';
+		//Set player number dependent variables
+		if (this.playerNum == 1) {
+			this.color = 'white';
 
-            //Set spawn position and direction
-            this.sprite.position.x = 50;
-            this.sprite.position.y = 300;
-            this.lastDirection = 'E';
-        } else {
-            this.color = 'black';
+			//Set spawn position and direction
+			this.sprite.position.x = 50;
+			this.sprite.position.y = 300;
+			this.lastDirection = 'E';
 
-            this.sprite.position.x = 300;
-            this.sprite.position.y = 300;
-            this.lastDirection = 'W';
-        }
+			this.shootSound = new Howl({
+				src: ['./audio/shoot1.mp3']
+			});
+		} else {
+			this.color = 'black';
 
-        //Set initial texture
-        this.sprite.texture = PIXI.loader.resources[
-            this.color + '_' + this.lastDirection + '_' + 'idle0'
-        ].texture;
+			this.sprite.position.x = 300;
+			this.sprite.position.y = 300;
+			this.lastDirection = 'W';
 
-        //Movement vars
-        this.velocity = {};
-        this.velocity.x = 0;
-        this.velocity.y = 0;
+			this.shootSound = new Howl({
+				src: ['./audio/shoot2.mp3']
+			});
+		}
 
-        this.fwd = {}; //The direction the player is currently pointed towards
-        this.fwd.x = 0;
-        this.fwd.y = 0;
+		//Set initial texture
+		this.sprite.texture = PIXI.loader.resources[
+			this.color + '_' + this.lastDirection + '_' + 'idle0'
+		].texture;
 
-        //Shooting vars
-        this.lastTriggerState = 0; //Last state of the trigger used to shoot
-        this.isAiming = false; //Determines if the player is actively aiming the crosshair
+		//Movement vars
+		this.velocity = {};
+		this.velocity.x = 0;
+		this.velocity.y = 0;
 
-        //Animation vars
-        this.frameNum = 9; //Frame the animation is on. 9 is the start, 0 is the end.
-        this.currFrameTime = 0; //Time this frame has been displaying
-        this.isShooting = false; //Is the shoot animation happening?
-    }
+		this.fwd = {}; //The direction the player is currently pointed towards
+		this.fwd.x = 0;
+		this.fwd.y = 0;
 
-    //Update the cowboy object
-    update(delta) {
-        if (delta === undefined)
-            return;
+		//Shooting vars
+		this.lastTriggerState = 0; //Last state of the trigger used to shoot
+		this.isAiming = false; //Determines if the player is actively aiming the crosshair
 
-        if (this.gamepad === undefined)
-            return;
+		//Animation vars
+		this.frameNum = 9; //Frame the animation is on. 9 is the start, 0 is the end.
+		this.currFrameTime = 0; //Time this frame has been displaying
+		this.isShooting = false; //Is the shoot animation happening?
 
-        //Movement
-        if (!this.isShooting) {
-            this.fwd.x = applyDeadzone(this.gamepad.axes[0], deadzone);
-            this.fwd.y = applyDeadzone(this.gamepad.axes[1], deadzone);
+		//Audio vars
+		this.reloadSound = new Howl({
+			src: ['./audio/reload.mp3'],
+			volume: 0.5,
+			loop: true
+		});
+	}
 
-            this.velocity.x = this.fwd.x * maxSpeed;
-            this.velocity.y = this.fwd.y * maxSpeed;
+	//Update the cowboy object
+	update(delta) {
+		if (delta === undefined)
+			return;
 
-            this.sprite.position.x += this.velocity.x * delta;
-            this.sprite.position.y += this.velocity.y * delta;
-        }
+		if (this.gamepad === undefined)
+			return;
 
-        //Crosshair position
-        this.crosshair.position.x = applyDeadzone(this.gamepad.axes[2], deadzone) * crossRange;
+		//Movement
+		if (!this.isShooting) {
+			this.fwd.x = applyDeadzone(this.gamepad.axes[0], deadzone);
+			this.fwd.y = applyDeadzone(this.gamepad.axes[1], deadzone);
 
-        this.crosshair.position.y = applyDeadzone(this.gamepad.axes[3], deadzone) * crossRange;
+			this.velocity.x = this.fwd.x * maxSpeed;
+			this.velocity.y = this.fwd.y * maxSpeed;
 
-        if (this.crosshair.position.x == 0 && this.crosshair.position.y == 0) {
-            this.crosshair.visible = false;
-            this.isAiming = false;
-        } else {
-            this.crosshair.visible = true;
-            this.isAiming = true;
-        }
+			this.sprite.position.x += this.velocity.x * delta;
+			this.sprite.position.y += this.velocity.y * delta;
+		}
 
-        //Shooting (uses Right Trigger)
-        if (this.gamepad.buttons[7].value > 0.3 && this.lastTriggerState < 0.3 && this.isAiming) {
-            this.isShooting = true;
-            this.frameNum = 2;
-            this.shoot();
-        }
-        this.lastTriggerState = this.gamepad.buttons[7].value;
+		//Crosshair position
+		this.crosshair.position.x = applyDeadzone(this.gamepad.axes[2], deadzone) * crossRange;
 
-        this.animate(delta); //Update sprite texture
+		this.crosshair.position.y = applyDeadzone(this.gamepad.axes[3], deadzone) * crossRange;
 
-        this.keepInBounds();
-    }
+		if (this.crosshair.position.x == 0 && this.crosshair.position.y == 0) {
+			this.crosshair.visible = false;
+			this.isAiming = false;
+		} else {
+			this.crosshair.visible = true;
+			this.isAiming = true;
+		}
 
-    animate(delta) {
-        //Find what direction the desired stick is in
-        let currDirection = '';
-        let action; //The action the cowboy is doing
+		//Shooting (uses Right Trigger)
+		if (this.gamepad.buttons[7].value > 0.3 && this.lastTriggerState < 0.3 && this.isAiming) {
+			this.shoot();
+			this.frameNum = 2; //First frame number of the shoot animation
+		}
+		this.lastTriggerState = this.gamepad.buttons[7].value;
 
-        if (this.isShooting) {
-            action = 'shoot';
-            currDirection = this.getCardinalStickDirection(3, 2);
-            if (currDirection == '')
-                currDirection = this.lastDirection;
-        } else {
-            currDirection = this.getCardinalStickDirection(1, 0);
+		this.animate(delta); //Update sprite texture
 
-            if (currDirection == '') {
-                action = 'idle';
-                this.frameNum = 0;
-                currDirection = this.lastDirection;
-            } else {
-                this.lastDirection = currDirection;
-                action = 'walk';
-            }
-        }
+		this.keepInBounds();
+	}
 
-        //Set the texture based on the color, direction, action, and frame number
-        this.sprite.texture = PIXI.loader.resources[
-            this.color + '_' + currDirection + '_' + action + this.frameNum
-        ].texture;
+	animate(delta) {
+		//Find what direction the desired stick is in
+		let currDirection = '';
+		let action; //The action the cowboy is doing
 
-        this.currFrameTime += delta;
+		if (this.isShooting) {
+			action = 'shoot';
+			currDirection = this.getCardinalStickDirection(3, 2);
+			if (currDirection == '')
+				currDirection = this.lastDirection;
+		} else {
+			currDirection = this.getCardinalStickDirection(1, 0);
 
-        //Should the next frame cycle in?
-        if (this.currFrameTime >= 60 / animationFPS) {
-            if (this.frameNum <= 0) {
-                this.frameNum = 9; //Reset cycle back to top
-                this.isShooting = false; //Reset shooting
-            } else {
-                this.frameNum--;
-            }
+			if (currDirection == '') {
+				action = 'idle';
+				this.frameNum = 0;
+				currDirection = this.lastDirection;
+			} else {
+				this.lastDirection = currDirection;
+				action = 'walk';
+			}
+		}
 
-            this.currFrameTime = 0; //Reset time for next frame
-        }
-    }
+		//Set the texture based on the color, direction, action, and frame number
+		this.sprite.texture = PIXI.loader.resources[
+			this.color + '_' + currDirection + '_' + action + this.frameNum
+		].texture;
 
-    shoot() {
+		this.currFrameTime += delta;
 
-        let bulletFwd = {};
-        bulletFwd.x = applyDeadzone(this.gamepad.axes[2], deadzone);
-        bulletFwd.y = applyDeadzone(this.gamepad.axes[3], deadzone);
-        let bulletClone = new bullet(this, bulletFwd);
+		//Should the next frame cycle in?
+		if (this.currFrameTime >= 60 / animationFPS) {
+			if (this.frameNum <= 0) {
+				this.frameNum = 9; //Reset cycle back to top
+				this.isShooting = false; //Reset shooting
+			} else {
+				this.frameNum--;
+			}
 
-        AddBullet(bulletClone);
-    }
+			this.currFrameTime = 0; //Reset time for next frame
+		}
+	}
 
-    //Keeps the cowboy in the game's bounds
-    keepInBounds() {
-        let x = this.sprite.position.x;
-        let y = this.sprite.position.y;
-        let spriteHalfWidth = this.sprite.width / 2;
-        let spriteHalfHeight = this.sprite.height / 2;
-        let stageWidth = app.renderer.width;
-        let stageHeight = app.renderer.height;
+	shoot() {
+		//this.shootSound.stop();
+		this.isShooting = true;
+		
+		let bulletFwd = {};
+		bulletFwd.x = applyDeadzone(this.gamepad.axes[2], deadzone);
+		bulletFwd.y = applyDeadzone(this.gamepad.axes[3], deadzone);
+		let bulletClone = new bullet(this, bulletFwd);
 
-        if (x - spriteHalfWidth <= 0)
-            this.sprite.position.x = spriteHalfWidth;
+		this.shootSound.play();
+		AddBullet(bulletClone);
+	}
 
-        if (x + spriteHalfWidth >= stageWidth)
-            this.sprite.position.x = stageWidth - spriteHalfWidth;
+	//Keeps the cowboy in the game's bounds
+	keepInBounds() {
+		let x = this.sprite.position.x;
+		let y = this.sprite.position.y;
+		let spriteHalfWidth = this.sprite.width / 2;
+		let spriteHalfHeight = this.sprite.height / 2;
+		let stageWidth = app.renderer.width;
+		let stageHeight = app.renderer.height;
 
-        //Add the same padding that the other bounds have
-        if (y + spriteHalfHeight >= stageHeight - 10)
-            this.sprite.position.y = stageHeight - spriteHalfHeight - 10;
+		if (x - spriteHalfWidth <= 0)
+			this.sprite.position.x = spriteHalfWidth;
 
-        if (y - spriteHalfHeight <= 0)
-            this.sprite.position.y = spriteHalfHeight;
-    }
+		if (x + spriteHalfWidth >= stageWidth)
+			this.sprite.position.x = stageWidth - spriteHalfWidth;
 
-    //Gets cardinal direction of analog stick's vertical and horizontal axes
-    getCardinalStickDirection(vertical, horizontal) {
-        let horizontalDir = '';
-        let verticalDir = '';
+		//Add the same padding that the other bounds have
+		if (y + spriteHalfHeight >= stageHeight - 10)
+			this.sprite.position.y = stageHeight - spriteHalfHeight - 10;
 
-        if (applyDeadzone(this.gamepad.axes[vertical], deadzone) > 0)
-            verticalDir = 'S';
-        if (applyDeadzone(this.gamepad.axes[vertical], deadzone) < 0)
-            verticalDir = 'N';
-        if (applyDeadzone(this.gamepad.axes[horizontal], deadzone) > 0)
-            horizontalDir = 'E';
-        if (applyDeadzone(this.gamepad.axes[horizontal], deadzone) < 0)
-            horizontalDir = 'W';
+		if (y - spriteHalfHeight <= 0)
+			this.sprite.position.y = spriteHalfHeight;
+	}
 
-        return verticalDir + horizontalDir;
-    }
+	//Gets cardinal direction of analog stick's vertical and horizontal axes
+	getCardinalStickDirection(vertical, horizontal) {
+		let horizontalDir = '';
+		let verticalDir = '';
+
+		if (applyDeadzone(this.gamepad.axes[vertical], deadzone) > 0)
+			verticalDir = 'S';
+		if (applyDeadzone(this.gamepad.axes[vertical], deadzone) < 0)
+			verticalDir = 'N';
+		if (applyDeadzone(this.gamepad.axes[horizontal], deadzone) > 0)
+			horizontalDir = 'E';
+		if (applyDeadzone(this.gamepad.axes[horizontal], deadzone) < 0)
+			horizontalDir = 'W';
+
+		return verticalDir + horizontalDir;
+	}
 
 }
