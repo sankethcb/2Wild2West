@@ -50,15 +50,15 @@ function loadCowboy(color)
     for(let i = 0; i < directions.length; i++)
     {
         //./img/cowboys/color/direction_action
-        //Load idle texture for this direction
-        PIXI.loader.add(color + '_' + directions[i] + '_' + 'idle', 
+        //Load idle texture for this direction. Frame number is always 0
+        PIXI.loader.add(color + '_' + directions[i] + '_' + 'idle0', 
                         './img/cowboys/' + color + '/' + directions[i] + '_' + 'idle.png');
 
         //Load all of the walking textures for this direction
         for(let j = 0; j < 10; j++)
         {
-            PIXI.loader.add(color + '_' + directions[i] + '_' + 'walk' + j, 
-                            './img/cowboys/' + color + '/' + directions[i] + '_' + 'walk' + j + '.png');
+            PIXI.loader.add(color + '_' + directions[i] + '_walk' + j, 
+                            './img/cowboys/' + color + '/' + directions[i] + '_walk' + j + '.png');
         }
 
         //Load the shooting textures for this direction
