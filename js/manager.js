@@ -122,7 +122,6 @@ function SwitchState(nextState) {
 		case menu:
 			clearCanvas();
 			app.stage.addChild(menuContainer);
-			console.log(menuMusic.playing);
 			if(!menuMusic.playing())
 				menuMusic.play();
 			state = menu;
