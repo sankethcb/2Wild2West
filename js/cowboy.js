@@ -14,7 +14,7 @@ class Cowboy {
 	constructor(pNum) {
 		//Sprite settings
 		this.sprite = new PIXI.Sprite();
-		this.HP = 3;
+		this.HP = 1;
 		this.sprite.anchor.set(0.5, 0.5);
 		b.addCollisionProperties(this.sprite);
 
@@ -120,7 +120,7 @@ class Cowboy {
 		}
 
 		//Shooting (uses Right Trigger)
-		if (this.gamepad.buttons[7].value > 0.3 && this.lastTriggerState < 0.3 && this.isAiming) {
+		if (this.gamepad.buttons[7].value > 0.5 && this.lastTriggerState < .3 && this.isAiming) {
 			this.shoot();
 			this.frameNum = 2; //First frame number of the shoot animation
 		}

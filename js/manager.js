@@ -16,17 +16,36 @@ let deadPlayer;
 let bg;
 
 //UI Variables
-let controlText;
 let menuContainer = new PIXI.Container();
+let instructContainer = new PIXI.Container();
 let gameContainer = new PIXI.Container();
 let goContainer = new PIXI.Container();
+let fontStyle = new PIXI.TextStyle({
+	fontFamily: "Edmunds",
+	fontSize: 100,
+	fill: "black",
+	stroke: 'white'
+});
+let titleStyle = new PIXI.TextStyle({
+	fontFamily: "Edmunds",
+	fontSize: 100,
+	fill: "black",
+	stroke: 'white',
+	strokeThickness: 4,
+	dropShadow: true,
+	dropShadowColor: "#000000",
+	dropShadowBlur: 6,
+	dropShadowAngle: Math.PI / 6,
+	dropShadowDistance: 4
+});
+let controlText;
 
 //Bump.js variable
 let b = new Bump(PIXI);
 
 //Audio variables
-let menuLoop = new Howl({
-	src: ['./audio/menuloop.wav'],
+let menuMusic = new Howl({
+	src: ['./audio/menuLoop.wav'],
 	volume: 0.4,
 	loop: true
 });
@@ -42,6 +61,7 @@ function startManager() {
 		return;
 	}
 	loadBG();
+	InitInstructions(); //Set up containers for the menus
 	InitMenu();
 }
 
@@ -56,6 +76,15 @@ function gameLoop(delta) {
 	state(delta);
 }
 
+//The loop when at the menu
+function menu(delta) {
+	controlText.text = "Controllers Connected: " + numPads;
+}
+
+//The loop when at the instructions
+function instructions(delta){
+
+}
 
 //The loop when in the play state
 function play(delta) {
@@ -71,10 +100,6 @@ function play(delta) {
 	Collisions();
 }
 
-//The loop when at the menu
-function menu(delta) {
-	controlText.text = "Controllers Connected: " + numPads;
-}
 
 
 function SwitchState(nextState) {
@@ -82,12 +107,13 @@ function SwitchState(nextState) {
 		case play:
 			//Don't allow the game to start if there are no gamepads
 			if (numPads == 0) {
-				let warnText = new PIXI.Text('Please connect at least 1 controller to play.');
+				let warnText = new PIXI.Text('Please connect at least 1 controller to play.', fontStyle);
 				warnText.position.set(controlText.x, controlText.y + 50);
 				menuContainer.addChild(warnText);
 				return;
 			}
 
+			menuMusic.stop();
 			InitGame(numPads > 2 ? 2 : numPads);
 			clearCanvas();
 			app.stage.addChild(gameContainer);
@@ -96,8 +122,15 @@ function SwitchState(nextState) {
 		case menu:
 			clearCanvas();
 			app.stage.addChild(menuContainer);
-			menuLoop.play();
+			console.log(menuMusic.playing);
+			if(!menuMusic.playing())
+				menuMusic.play();
 			state = menu;
+			break;
+		case instructions:
+			clearCanvas();
+			app.stage.addChild(instructContainer);
+			state = instructions;
 			break;
 		case gameover:
 			clearCanvas();
@@ -110,35 +143,21 @@ function SwitchState(nextState) {
 //Clears all containers off the canvas and stops any music
 function clearCanvas() {
 	app.stage.removeChild(menuContainer);
+	app.stage.removeChild(instructContainer);
 	app.stage.removeChild(gameContainer);
 	app.stage.removeChild(goContainer);
-
-	menuLoop.stop();
 }
 
 //Start up the main menu with all graphics
 function InitMenu() {
 	//Title Message
-	let style = new PIXI.TextStyle({
-		fontFamily: "Tahoma",
-		fontSize: 100,
-		fill: "black",
-		stroke: 'white',
-		strokeThickness: 4,
-		dropShadow: true,
-		dropShadowColor: "#000000",
-		dropShadowBlur: 4,
-		dropShadowAngle: Math.PI / 6,
-		dropShadowDistance: 6,
-	});
-
-	let titleText = new PIXI.Text("2 Wild 2 West", style);
+	let titleText = new PIXI.Text("2 Wild 2 West", titleStyle);
 	titleText.anchor.set(0.5);
-	titleText.position.set(app.renderer.width / 2, 400);
+	titleText.position.set(app.renderer.width / 2, 200);
 	menuContainer.addChild(titleText);
 
 	//Controller Status
-	controlText = new PIXI.Text("Controllers Connected: " + numPads);
+	controlText = new PIXI.Text("Controllers Connected: " + numPads, fontStyle);
 	controlText.position.set(100, app.renderer.height - (app.renderer.height / 6));
 	app.stage.addChild(controlText);
 	menuContainer.addChild(controlText);
@@ -151,8 +170,8 @@ function InitMenu() {
 	button.y = -110;
 
 	//Button Text
-	style.fontSize = 50;
-	let buttonMessage = new PIXI.Text("Start", style);
+	fontStyle.fontSize = 50;
+	let buttonMessage = new PIXI.Text("Start", fontStyle);
 	buttonMessage.anchor.set(0.5);
 
 	//Add to container and positioning
@@ -160,7 +179,7 @@ function InitMenu() {
 	buttonContainer.addChild(button);
 	buttonContainer.addChild(buttonMessage);
 	buttonContainer.x = app.renderer.width / 2;
-	buttonContainer.y = 600;
+	buttonContainer.y = titleText.position.y + 200;
 
 	//Make it interactable
 	buttonContainer.interactive = true;
@@ -169,11 +188,107 @@ function InitMenu() {
 		SwitchState(play);
 	});
 
+	//Instruction button
+	let tutButton = new PIXI.Text("Instructions", fontStyle);
+	tutButton.anchor.set(0.5);
+	tutButton.x = app.renderer.width / 2;
+	tutButton.y = 600;
+	tutButton.interactive=true;
+	tutButton.buttonMode=true;
+	tutButton.on('pointerdown', (event) => {
+		SwitchState(instructions);
+	});
+
+
 	menuContainer.addChild(buttonContainer);
+	menuContainer.addChild(tutButton);
 
-	app.stage.addChild(menuContainer);
+	SwitchState(menu); //Switch over to the menu when it loads
+}
 
-	menuLoop.play();
+function InitInstructions(){
+
+	let instructText = new PIXI.Text('Instructions', titleStyle);
+	instructText.anchor.set(0.5);
+	instructText.position.set(app.renderer.width/2, 100);
+
+	//Variables to line up the instructions
+	let bottomMargin = 100;
+	let textX = app.renderer.width / 2 - 100;
+	let currY = 300;
+	let textImgGap = 125;
+
+	//Instructions text and images
+	let moveText = new PIXI.Text('Move:', fontStyle);
+	moveText.anchor.set(0.5);
+	moveText.position.set(textX, currY);
+	currY += bottomMargin;
+
+	let moveImg = new PIXI.Sprite(PIXI.loader.resources['lstick'].texture);
+	moveImg.anchor.set(0.5);
+	moveImg.scale.x = 0.04;
+	moveImg.scale.y = 0.04;
+	moveImg.x = moveText.position.x + textImgGap;
+	moveImg.y = moveText.position.y;
+
+	let aimText = new PIXI.Text('Aim:', fontStyle);
+	aimText.anchor.set(0.5);
+	aimText.position.set(textX, currY);
+	currY += bottomMargin;
+
+	let aimImg = new PIXI.Sprite(PIXI.loader.resources['rstick'].texture);
+	aimImg.anchor.set(0.5);
+	aimImg.scale.x = 0.04;
+	aimImg.scale.y = 0.04;
+	aimImg.x = aimText.position.x + textImgGap;
+	aimImg.y = aimText.position.y;
+
+	let shootText = new PIXI.Text('Shoot:', fontStyle);
+	shootText.anchor.set(0.5);
+	shootText.position.set(textX, currY);
+	currY += bottomMargin;
+
+	let shootImg = new PIXI.Sprite(PIXI.loader.resources['rt'].texture);
+	shootImg.anchor.set(0.5);
+	shootImg.scale.x = 1;
+	shootImg.scale.y = 1;
+	shootImg.x = shootText.position.x + textImgGap;
+	shootImg.y = shootText.position.y;
+	
+	/*
+	let reloadText = new PIXI.Text('Reload:', fontStyle);
+	reloadText.anchor.set(0.5);
+	reloadText.position.set(textX, currY);
+	currY += bottomMargin;
+
+	let reloadImg = new PIXI.Sprite(PIXI.loader.resources['x'].texture);
+	reloadImg.anchor.set(0.5);
+	reloadImg.scale.x = 0.04;
+	reloadImg.scale.y = 0.04;
+	reloadImg.x = reloadText.position.x + textImgGap;
+	reloadImg.y = reloadText.position.y;*/
+
+	//Back to menu button
+	let backButton= new PIXI.Text("Back to Menu", fontStyle);
+	backButton.anchor.set(0.5);
+	backButton.x = app.renderer.width / 2;
+	backButton.y = 800;
+	backButton.interactive=true;
+	backButton.buttonMode=true;
+	backButton.on('pointerdown', (event) => {
+		SwitchState(menu);
+	});
+
+	instructContainer.addChild(instructText);
+	instructContainer.addChild(moveText);
+	instructContainer.addChild(moveImg);
+	instructContainer.addChild(aimText);
+	instructContainer.addChild(aimImg);
+	instructContainer.addChild(shootText);
+	instructContainer.addChild(shootImg);
+	//instructContainer.addChild(reloadText);
+	//instructContainer.addChild(reloadImg);
+	instructContainer.addChild(backButton);
 }
 
 //Start up the core game when in the play state
@@ -190,23 +305,11 @@ function InitGame(numPlayers) {
 }
 
 function gameover() {
-	let style = new PIXI.TextStyle({
-		fontFamily: "Tahoma",
-		fontSize: 100,
-		fill: "black",
-		stroke: 'white',
-		strokeThickness: 4,
-		dropShadow: true,
-		dropShadowColor: "#000000",
-		dropShadowBlur: 4,
-		dropShadowAngle: Math.PI / 6,
-		dropShadowDistance: 6,
-	});
-	let titleText;
+	let titleText = new PIXI.Text();
 	if (deadPlayer == 2)
-		titleText = new PIXI.Text("Player 1 Wins!", style);
+		titleText = new PIXI.Text("White Hat Wins!", titleStyle);
 	if (deadPlayer == 1)
-		titleText = new PIXI.Text("Player 2 Wins!", style);
+		titleText = new PIXI.Text("Black Hat Wins!", titleStyle);
 	titleText.anchor.set(0.5);
 	titleText.position.set(app.renderer.width / 2, 400);
 	goContainer.addChild(titleText);
@@ -221,6 +324,7 @@ function AddBullet(bullet) {
 	gameContainer.addChild(bullet.sprite);
 }
 
+//Remove bullet from the bullet list
 function RemoveBullet(bullet) {
 	let index = bulletList.indexOf(bullet);
 	if (index != -1) {
@@ -229,8 +333,6 @@ function RemoveBullet(bullet) {
 		bullet = null;
 	}
 }
-
-
 
 
 //Game Collisions
@@ -272,8 +374,4 @@ function Collisions() {
 				}
 		}
 	}
-
-
-
-
 }

@@ -1,6 +1,13 @@
 import { startManager, gameLoop } from './manager.js';
 export { app };
 
+WebFont.load({
+	custom: {
+		families: ['Edmunds'],
+		urls: ['./font/fonts.css']
+	}
+});
+
 let app = new PIXI.Application({
 	width: 256,
 	height: 256,
@@ -30,6 +37,10 @@ function setup() {
 		.add('white crosshair', './img/white crosshair.png')
 		.add('black crosshair', './img/black crosshair.png')
 		.add('star', './img/star.png')
+		.add('x', './img/x.png')
+		.add('rt', './img/right trigger.png')
+		.add('lstick', './img/left stick.png')
+		.add('rstick', './img/right stick.png')
 		.add('bullet', './img/bullet.png')
 		.add('sand', './img/sand.png');
 
