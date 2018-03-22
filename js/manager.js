@@ -255,7 +255,7 @@ function InitInstructions(){
     shootImg.x = shootText.position.x + textImgGap;
     shootImg.y = shootText.position.y;
 
-    /*
+    
 	let reloadText = new PIXI.Text('Reload:', fontStyle);
 	reloadText.anchor.set(0.5);
 	reloadText.position.set(textX, currY);
@@ -266,7 +266,7 @@ function InitInstructions(){
 	reloadImg.scale.x = 0.04;
 	reloadImg.scale.y = 0.04;
 	reloadImg.x = reloadText.position.x + textImgGap;
-	reloadImg.y = reloadText.position.y;*/
+	reloadImg.y = reloadText.position.y;
 
     //Back to menu button
     let backButton= new PIXI.Text("Back to Menu", fontStyle);
@@ -286,8 +286,8 @@ function InitInstructions(){
     instructContainer.addChild(aimImg);
     instructContainer.addChild(shootText);
     instructContainer.addChild(shootImg);
-    //instructContainer.addChild(reloadText);
-    //instructContainer.addChild(reloadImg);
+    instructContainer.addChild(reloadText);
+    instructContainer.addChild(reloadImg);
     instructContainer.addChild(backButton);
 }
 
@@ -320,6 +320,8 @@ function createMap()
 }
 
 function gameover() {
+	Howler.unload();
+	
     let titleText = new PIXI.Text();
     if (deadPlayer == 2)
         titleText = new PIXI.Text("White Hat Wins!", titleStyle);
