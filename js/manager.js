@@ -61,6 +61,7 @@ function startManager() {
 		return;
 	}
 	loadBG();
+    createMap();
 	InitInstructions(); //Set up containers for the menus
 	InitMenu();
 }
@@ -295,12 +296,29 @@ function InitGame(numPlayers) {
 	if (numPlayers == 0) {
 		return;
 	}
-
+    
+    for(let i=0;i<mapList.length;i++){
+        gameContainer.addChild(mapList[i]);
+        console.log(mapList);
+    }
 	//Init all players
 	for (let i = 0; i < numPlayers; i++) {
 		players[i] = new Cowboy(i + 1);
 		gameContainer.addChild(players[i].sprite);
 	}
+    
+    
+}
+
+function createMap()
+{
+    let barrel1=new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel1.x=500;
+    barrel1.y=500;
+    barrel1.anchor.set(0.5);
+    mapList.push(barrel1);
+   
+    
 }
 
 function gameover() {

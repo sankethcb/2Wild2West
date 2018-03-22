@@ -42,7 +42,12 @@ function setup() {
 		.add('lstick', './img/left stick.png')
 		.add('rstick', './img/right stick.png')
 		.add('bullet', './img/bullet.png')
-		.add('sand', './img/sand.png');
+		.add('sand', './img/sand.png')
+    .add('barrel', './img/map/barrel.png')
+    .add('chariot', './img/map/chariot.png')
+    .add('cactus', './img/map/cactus.png')
+    .add('crate', './img/map/crate.png')
+    .add('rock', './img/map/rock.png');
 
 	//Change if more or less than two characters are playable
 	loadCowboy('white');
