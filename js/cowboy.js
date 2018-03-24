@@ -140,8 +140,8 @@ class Cowboy {
 			this.isAiming = true;
 		}
 
-		//Shooting (uses Right Trigger)
-		if (this.gamepad.buttons[7].value > 0.3 && this.lastTriggerState < .3 && this.isAiming) {
+		//Shooting (uses Right Trigger) only works while aiming and not reloading
+		if (this.gamepad.buttons[7].value > 0.3 && this.lastTriggerState < .3 && this.isAiming && !this.reloadSound.playing()) {
 			this.shoot();
 		}
 		this.lastTriggerState = this.gamepad.buttons[7].value;
