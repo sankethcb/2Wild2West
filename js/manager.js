@@ -63,8 +63,9 @@ function startManager() {
     loadBG();
     createMap();
     InitInstructions(); //Set up containers for the menus
-    InitMenu();
     InitGO();
+    InitMenu();
+
 }
 
 //Load the tiling background
@@ -102,6 +103,9 @@ function play(delta) {
     Collisions();
 }
 
+function gameover() {
+
+}
 
 
 function SwitchState(nextState) {
@@ -302,7 +306,7 @@ function InitGame(numPlayers) {
 
     for (let i = 0; i < mapList.length; i++) {
         gameContainer.addChild(mapList[i]);
-        console.log(mapList);
+
     }
     //Init all players
     for (let i = 0; i < numPlayers; i++) {
@@ -311,6 +315,26 @@ function InitGame(numPlayers) {
         gameContainer.addChild(players[i].sprite);
         gameContainer.addChild(players[i].revolver);
     }
+}
+
+function Reset() {
+
+    for (let i = 0; i < bulletList.length; i++)
+        RemoveBullet(bulletList[i]);
+
+
+
+    for (let i = 0; i < numPlayers; i++) {
+        players[i] = null;
+        gameContainer.removeChild(players[i].sprite);
+        gameContainer.removeChild(players[i].revolver);
+
+        players[i] = new Cowboy(i + 1);
+
+        gameContainer.addChild(players[i].sprite);
+        gameContainer.addChild(players[i].revolver);
+    }
+    SwitchState(menu);
 }
 
 function createMap() {
@@ -330,27 +354,13 @@ function InitGO() {
     backButton.interactive = true;
     backButton.buttonMode = true;
     backButton.on('pointerdown', (event) => {
-        SwitchState(menu);
+        Reset();
     });
 
     goContainer.addChild(backButton);
 }
 
 
-function gameover() {
-    //Howler.unload();
-
-    let titleText = new PIXI.Text();
-    if (deadPlayer == 2)
-        titleText = new PIXI.Text("White Hat Wins!", titleStyle);
-    if (deadPlayer == 1)
-        titleText = new PIXI.Text("Black Hat Wins!", titleStyle);
-    titleText.anchor.set(0.5);
-    titleText.position.set(app.renderer.width / 2, 400);
-    goContainer.addChild(titleText);
-
-    app.stage.addChild(goContainer);
-}
 
 
 //Add a bullet to the bullet list
@@ -367,6 +377,23 @@ function RemoveBullet(bullet) {
         bulletList.splice(index, 1);
         bullet = null;
     }
+}
+
+function KillPlayer() {
+    Howler.unload();
+
+    let titleText = new PIXI.Text();
+    if (deadPlayer == 2)
+        titleText = new PIXI.Text("White Hat Wins!", titleStyle);
+    if (deadPlayer == 1)
+        titleText = new PIXI.Text("Black Hat Wins!", titleStyle);
+    titleText.anchor.set(0.5);
+    titleText.position.set(app.renderer.width / 2, 400);
+    goContainer.addChild(titleText);
+
+    app.stage.addChild(goContainer);
+
+    SwitchState(gameover);
 }
 
 
@@ -394,7 +421,7 @@ function Collisions() {
                 players[0].HP--;
                 if (players[0].HP-- == 0) {
                     deadPlayer = 1;
-                    SwitchState(gameover);
+                    KillPlayer();
                 }
             }
         } else if (bulletList[i].playerNum == 1) {
@@ -404,7 +431,7 @@ function Collisions() {
                     players[1].HP--;
                     if (players[1].HP-- == 0) {
                         deadPlayer = 2;
-                        SwitchState(gameover);
+                        KillPlayer();
                     }
                 }
         }
