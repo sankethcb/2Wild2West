@@ -52,18 +52,19 @@ let menuMusic = new Howl({
 
 //Initializes manager itself
 function startManager() {
-	setGamepadConnectionEvents();
-	app.ticker.add(delta => gameLoop(delta))
+    setGamepadConnectionEvents();
+    app.ticker.add(delta => gameLoop(delta))
 
-	if (SKIP_MENU) {
-		state = play;
-		InitGame(2);
-		return;
-	}
-	loadBG();
+    if (SKIP_MENU) {
+        state = play;
+        InitGame(2);
+        return;
+    }
+    loadBG();
     createMap();
-	InitInstructions(); //Set up containers for the menus
-	InitMenu();
+    InitInstructions(); //Set up containers for the menus
+    InitMenu();
+    InitGO();
 }
 
 //Load the tiling background
@@ -83,7 +84,7 @@ function menu(delta) {
 }
 
 //The loop when at the instructions
-function instructions(delta){
+function instructions(delta) {
 
 }
 
@@ -123,7 +124,7 @@ function SwitchState(nextState) {
         case menu:
             clearCanvas();
             app.stage.addChild(menuContainer);
-            if(!menuMusic.playing())
+            if (!menuMusic.playing())
                 menuMusic.play();
             state = menu;
             break;
@@ -193,8 +194,8 @@ function InitMenu() {
     tutButton.anchor.set(0.5);
     tutButton.x = app.renderer.width / 2;
     tutButton.y = 600;
-    tutButton.interactive=true;
-    tutButton.buttonMode=true;
+    tutButton.interactive = true;
+    tutButton.buttonMode = true;
     tutButton.on('pointerdown', (event) => {
         SwitchState(instructions);
     });
@@ -206,11 +207,11 @@ function InitMenu() {
     SwitchState(menu); //Switch over to the menu when it loads
 }
 
-function InitInstructions(){
+function InitInstructions() {
 
     let instructText = new PIXI.Text('Instructions', titleStyle);
     instructText.anchor.set(0.5);
-    instructText.position.set(app.renderer.width/2, 100);
+    instructText.position.set(app.renderer.width / 2, 100);
 
     //Variables to line up the instructions
     let bottomMargin = 100;
@@ -255,29 +256,31 @@ function InitInstructions(){
     shootImg.x = shootText.position.x + textImgGap;
     shootImg.y = shootText.position.y;
 
-    
-	let reloadText = new PIXI.Text('Reload:', fontStyle);
-	reloadText.anchor.set(0.5);
-	reloadText.position.set(textX, currY);
-	currY += bottomMargin;
 
-	let reloadImg = new PIXI.Sprite(PIXI.loader.resources['x'].texture);
-	reloadImg.anchor.set(0.5);
-	reloadImg.scale.x = 0.04;
-	reloadImg.scale.y = 0.04;
-	reloadImg.x = reloadText.position.x + textImgGap;
-	reloadImg.y = reloadText.position.y;
+    let reloadText = new PIXI.Text('Reload:', fontStyle);
+    reloadText.anchor.set(0.5);
+    reloadText.position.set(textX, currY);
+    currY += bottomMargin;
+
+    let reloadImg = new PIXI.Sprite(PIXI.loader.resources['x'].texture);
+    reloadImg.anchor.set(0.5);
+    reloadImg.scale.x = 0.04;
+    reloadImg.scale.y = 0.04;
+    reloadImg.x = reloadText.position.x + textImgGap;
+    reloadImg.y = reloadText.position.y;
 
     //Back to menu button
-    let backButton= new PIXI.Text("Back to Menu", fontStyle);
+    let backButton = new PIXI.Text("Back to Menu", fontStyle);
     backButton.anchor.set(0.5);
     backButton.x = app.renderer.width / 2;
     backButton.y = 800;
-    backButton.interactive=true;
-    backButton.buttonMode=true;
+    backButton.interactive = true;
+    backButton.buttonMode = true;
     backButton.on('pointerdown', (event) => {
         SwitchState(menu);
     });
+
+
 
     instructContainer.addChild(instructText);
     instructContainer.addChild(moveText);
@@ -293,11 +296,11 @@ function InitInstructions(){
 
 //Start up the core game when in the play state
 function InitGame(numPlayers) {
-	if (numPlayers == 0) {
-		return;
-	}
-    
-    for(let i=0;i<mapList.length;i++){
+    if (numPlayers == 0) {
+        return;
+    }
+
+    for (let i = 0; i < mapList.length; i++) {
         gameContainer.addChild(mapList[i]);
         console.log(mapList);
     }
@@ -310,18 +313,33 @@ function InitGame(numPlayers) {
     }
 }
 
-function createMap()
-{
-    let barrel1=new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
-    barrel1.x=500;
-    barrel1.y=500;
+function createMap() {
+    let barrel1 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel1.x = 500;
+    barrel1.y = 500;
     barrel1.anchor.set(0.5);
     mapList.push(barrel1);
 }
 
+function InitGO() {
+    //Back to menu button
+    let backButton = new PIXI.Text("Back to Menu", fontStyle);
+    backButton.anchor.set(0.5);
+    backButton.x = app.renderer.width / 2;
+    backButton.y = 800;
+    backButton.interactive = true;
+    backButton.buttonMode = true;
+    backButton.on('pointerdown', (event) => {
+        SwitchState(menu);
+    });
+
+    goContainer.addChild(backButton);
+}
+
+
 function gameover() {
-	Howler.unload();
-	
+    //Howler.unload();
+
     let titleText = new PIXI.Text();
     if (deadPlayer == 2)
         titleText = new PIXI.Text("White Hat Wins!", titleStyle);
