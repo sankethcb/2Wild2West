@@ -35,8 +35,6 @@ class Cowboy {
 		this.revolver.scale.x = 1.5;
 		this.revolver.scale.y = 1.5;
 		this.revolver.anchor.set(0.5);
-		this.revolver.rotation
-		this.spinRevolver = false; //Toggles revolver spinning animation
 
 		//Player number and color
 		this.playerNum = pNum;
@@ -151,17 +149,16 @@ class Cowboy {
 			//Only reload if not already reloading
 			if(!this.reloadSound.playing()){
 				this.reloadSound.play();
-				this.spinRevolver = true;
 				let thisCowboy = this;
 				this.reloadSound.on('end', function(){
 					thisCowboy.ammo = 6;
 					thisCowboy.updateRevolver();
-					thisCowboy.spinRevolver = false;
 				});
 			}
 		}
 		
-		if(this.spinRevolver){
+		//Rotate the revolver sprite while reloading
+		if(this.reloadSound.playing()){
 			this.revolver.rotation -= 0.2;
 		}
 
