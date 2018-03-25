@@ -47,7 +47,6 @@ function setup() {
         .add('barrel', './img/map/barrel.png')
         .add('chariot', './img/map/chariot.png')
         .add('cactus', './img/map/cactus.png')
-        .add('crate', './img/map/crate.png')
         .add('rock', './img/map/rock.png');
 
     //Load the two sets of cowboy textures
@@ -68,18 +67,18 @@ function loadCowboy(color) {
         //./img/cowboys/color/direction_action
         //Load idle texture for this direction. Frame number is always 0
         PIXI.loader.add(color + '_' + directions[i] + '_' + 'idle0',
-                        './img/cowboys/' + color + '/' + directions[i] + '_' + 'idle.png');
+            './img/cowboys/' + color + '/' + directions[i] + '_' + 'idle.png');
 
         //Load all of the walking textures for this direction
         for (let j = 0; j < 10; j++) {
             PIXI.loader.add(color + '_' + directions[i] + '_walk' + j,
-                            './img/cowboys/' + color + '/' + directions[i] + '_walk' + j + '.png');
+                './img/cowboys/' + color + '/' + directions[i] + '_walk' + j + '.png');
         }
 
         //Load the shooting textures for this direction
         for (let j = 0; j < 3; j++) {
             PIXI.loader.add(color + '_' + directions[i] + '_' + 'shoot' + j,
-                            './img/cowboys/' + color + '/' + directions[i] + '_' + 'shoot' + j + '.png');
+                './img/cowboys/' + color + '/' + directions[i] + '_' + 'shoot' + j + '.png');
         }
     }
 }

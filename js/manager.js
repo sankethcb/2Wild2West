@@ -98,7 +98,8 @@ function play(delta) {
     }
     for (let i = 0; i < bulletList.length; i++) {
         bulletList[i].move(delta);
-
+        if (!bulletList[i].inBounds)
+            RemoveBullet(bulletList[i]);
     }
     Collisions();
 }
@@ -341,8 +342,77 @@ function createMap() {
     let barrel1 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
     barrel1.x = 500;
     barrel1.y = 500;
-    barrel1.anchor.set(0.5);
     mapList.push(barrel1);
+
+    let barrel2 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel2.x = app.renderer.width - 500;
+    barrel2.y = app.renderer.height - 500;
+    mapList.push(barrel2);
+
+    let barrel3 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel3.x = 850;
+    barrel3.y = 900;
+    mapList.push(barrel3);
+
+    let barrel4 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel4.x = app.renderer.width - 850;
+    barrel4.y = app.renderer.height - 900;
+    mapList.push(barrel4);
+
+    let chariot1 = new PIXI.Sprite(PIXI.loader.resources['chariot'].texture);
+    chariot1.x = 800;
+    chariot1.y = 250;
+    chariot1.scale.x = 2;
+    chariot1.scale.y = 2;
+    mapList.push(chariot1);
+
+    let chariot2 = new PIXI.Sprite(PIXI.loader.resources['chariot'].texture);
+    chariot2.x = app.renderer.width - 800;
+    chariot2.y = app.renderer.height - 250;
+    chariot2.scale.x = 2;
+    chariot2.scale.y = 2;
+    mapList.push(chariot2);
+
+
+    let cactus1 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus1.x = 600;
+    cactus1.y = 800;
+    mapList.push(cactus1);
+
+    let cactus2 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus2.x = app.renderer.width - 600;
+    cactus2.y = app.renderer.height - 800;
+    mapList.push(cactus2);
+
+    let cactus3 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus3.x = 700;
+    cactus3.y = 400;
+    mapList.push(cactus3);
+
+    let cactus4 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus4.x = app.renderer.width - 700;
+    cactus4.y = app.renderer.height - 400;
+    mapList.push(cactus4);
+
+
+    let rock1 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
+    rock1.x = 300;
+    rock1.y = 200;
+    mapList.push(rock1);
+
+    let rock2 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
+    rock2.x = app.renderer.width - 300;
+    rock2.y = app.renderer.height - 200;
+    mapList.push(rock2);
+
+    let rock3 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
+    rock2.x = app.renderer.width / 2;
+    rock2.y = app.renderer.height / 2;
+    mapList.push(rock2);
+
+
+    for (let i = 0; i < mapList.length; i++)
+        mapList[i].anchor.set(0.5);
 }
 
 function InitGO() {
@@ -359,9 +429,6 @@ function InitGO() {
 
     goContainer.addChild(backButton);
 }
-
-
-
 
 //Add a bullet to the bullet list
 function AddBullet(bullet) {
@@ -411,10 +478,8 @@ function Collisions() {
     b.hit(players[0].sprite, mapList, true);
 
 
-
-
-    //Player  - bullet collisions
     for (var i = 0; i < bulletList.length; i++) {
+        //Player  - bullet collisions
         if (bulletList[i].playerNum == 2) {
             if (b.hit(players[0].sprite, bulletList[i].sprite)) {
                 RemoveBullet(bulletList[i]);
@@ -435,5 +500,12 @@ function Collisions() {
                     }
                 }
         }
+
+        //Map-Bullet collisions
+        for (var j = 0; j < mapList.length; j++)
+            if (b.hit(bulletList[i].sprite, mapList[j])) {
+                RemoveBullet(bulletList[i]);
+                break;
+            }
     }
 }

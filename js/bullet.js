@@ -1,5 +1,5 @@
 export { bullet };
-
+import { app } from './loader.js';
 class bullet {
     constructor(cowboy, bf) {
         this.sprite = new PIXI.Sprite(PIXI.loader.resources["bullet"].texture);
@@ -10,6 +10,7 @@ class bullet {
         this.velocity.x = 0;
         this.velocity.y = 0;
         this.speed = 10;
+        this.inBounds = true;
 
         this.normalize(this.fwd);
         this.sprite.position = cowboy.sprite.position;
@@ -26,6 +27,7 @@ class bullet {
 
         this.sprite.position.x += this.velocity.x * delta;
         this.sprite.position.y += this.velocity.y * delta;
+        this.checkBounds();
     }
 
 
@@ -36,10 +38,10 @@ class bullet {
         axis.y = 0;
         let angle = Math.acos((this.fwd.x * axis.x) + (this.fwd.y * axis.y));
 
-        if (this.fwd.y > 0)
-            this.sprite.rotation += angle;
-        else if (this.fwd.y < 0)
+        if (this.fwd.y < 0)
             this.sprite.rotation -= angle;
+        else
+            this.sprite.rotation += angle;
     }
 
     //Normalizes vector
@@ -49,6 +51,20 @@ class bullet {
             vector2.x /= squareSum;
             vector2.y /= squareSum;
         }
+
+    }
+
+    checkBounds() {
+        let x = this.sprite.position.x;
+        let y = this.sprite.position.y;
+        let spriteHalfWidth = this.sprite.width / 2;
+        let spriteHalfHeight = this.sprite.height / 2;
+        let stageWidth = app.renderer.width;
+        let stageHeight = app.renderer.height;
+
+        if (x - spriteHalfWidth <= 0 || x + spriteHalfWidth >= stageWidth || y + spriteHalfHeight >= stageHeight || y - spriteHalfHeight <= 0)
+            this.inBounds = false;
+
 
     }
 }
