@@ -33,7 +33,6 @@ window.onload = function() {
 
 function setup() {
     PIXI.loader
-        .add('hat', "./img/hat.png")
         .add('white crosshair', './img/white crosshair.png')
         .add('black crosshair', './img/black crosshair.png')
         .add('revolver', './img/revolver.png')
@@ -47,6 +46,7 @@ function setup() {
         .add('rstick', './img/right stick.png')
         .add('bullet', './img/bullet.png')
         .add('sand', './img/sand.png')
+        .add('smoke', './img/smoke.png')
         .add('barrel', './img/map/barrel.png')
         .add('chariot', './img/map/chariot.png')
         .add('cactus', './img/map/cactus.png')

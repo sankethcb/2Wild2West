@@ -1,8 +1,9 @@
-export { startManager, gameLoop, b, AddBullet };
+export { startManager, gameLoop, gameContainer, b, AddBullet };
 import { Bump } from './bump.js';
 import { app } from './loader.js';
 import { gamepads, pollGamepads, setGamepadConnectionEvents, numPads } from './controllers.js';
 import { Cowboy } from './cowboy.js';
+import {smokeEmitter, smokeContainer} from './emitters.js';
 
 //Debug variables
 const SKIP_MENU = false; //Skips over the menu whether or not controllers are connected
@@ -12,14 +13,15 @@ let state = menu;
 let players = []; //Holds the player objects
 let bulletList = []; //Holds the active bullets present in the game
 let mapList = []; //Holds the map *sprites*
-let deadPlayer;
 let bg;
 
 //UI Variables
 let menuContainer = new PIXI.Container();
 let instructContainer = new PIXI.Container();
 let gameContainer = new PIXI.Container();
-let goContainer = new PIXI.Container();
+let goContainer = new PIXI.Container(); //Game over
+
+//Text and styles
 let fontStyle = new PIXI.TextStyle({
     fontFamily: "Edmunds",
     fontSize: 100,
@@ -49,6 +51,10 @@ let menuMusic = new Howl({
     volume: 0.4,
     loop: true
 });
+
+//Particle variables
+let smokeTime = 2500; //Time smoke effect happens in ms
+let currSmokeTime = 0; //Current time smoke effect has been running
 
 //Initializes manager itself
 function startManager() {
@@ -120,7 +126,17 @@ function play(delta) {
             RemoveBullet(bulletList[i]);
     }
     Collisions();
-    deadPlayer = 1;
+	
+	//Update smoke effect if it's active
+	if(smokeEmitter.emit){
+		smokeEmitter.update(delta * 0.01);
+		currSmokeTime += delta;
+		if(currSmokeTime >= smokeTime){
+			//Go to gameover
+			smokeEmitter.emit = false;
+			SwitchState(gameover);
+		}
+	}
 
 }
 
@@ -371,6 +387,7 @@ function InitGame(numPlayers) {
     }
 }
 
+//Reset game variables
 function Reset() {
 
     for (let i = 0; i < bulletList.length; i++)
@@ -512,9 +529,11 @@ function RemoveBullet(bullet) {
     }
 }
 
-function KillPlayer() {
+//Kills player from index passed in and starts process to end the game
+function KillPlayer(deadPlayer) {
     Howler.unload();
 
+	//Set up gameover text based on dead player
     let titleText = new PIXI.Text();
     if (deadPlayer == 2)
         titleText = new PIXI.Text("White Hat Wins!", titleStyle);
@@ -524,9 +543,7 @@ function KillPlayer() {
     titleText.position.set(app.renderer.width / 2, 400);
     goContainer.addChild(titleText);
 
-    app.stage.addChild(goContainer);
-
-    SwitchState(gameover);
+    smokeEmitter.emit = true;
 }
 
 
@@ -551,8 +568,7 @@ function Collisions() {
                 RemoveBullet(bulletList[i]);
                 players[0].HP--;
                 if (players[0].HP-- == 0) {
-                    deadPlayer = 1;
-                    KillPlayer();
+                    KillPlayer(1);
                 }
             }
         } else if (bulletList[i].playerNum == 1) {
@@ -561,15 +577,14 @@ function Collisions() {
                     RemoveBullet(bulletList[i]);
                     players[1].HP--;
                     if (players[1].HP-- == 0) {
-                        deadPlayer = 2;
-                        KillPlayer();
+                        KillPlayer(2);
                     }
                 }
         }
 
         //Map-Bullet collisions
         for (var j = 0; j < mapList.length; j++)
-        //Make sure bullet still exists before checking
+        	//Make sure bullet still exists before checking
             if (bulletList[i] && b.hit(bulletList[i].sprite, mapList[j])) {
             RemoveBullet(bulletList[i]);
             break;
