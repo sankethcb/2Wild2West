@@ -3,7 +3,7 @@ import { Bump } from './bump.js';
 import { app } from './loader.js';
 import { gamepads, pollGamepads, setGamepadConnectionEvents, numPads } from './controllers.js';
 import { Cowboy } from './cowboy.js';
-import {smokeEmitter, smokeContainer} from './emitters.js';
+import { smokeEmitter, smokeContainer } from './emitters.js';
 
 //Debug variables
 const SKIP_MENU = false; //Skips over the menu whether or not controllers are connected
@@ -126,17 +126,20 @@ function play(delta) {
             RemoveBullet(bulletList[i]);
     }
     Collisions();
-	
-	//Update smoke effect if it's active
-	if(smokeEmitter.emit){
-		smokeEmitter.update(delta * 0.01);
-		currSmokeTime += delta;
-		if(currSmokeTime >= smokeTime){
-			//Go to gameover
-			smokeEmitter.emit = false;
-			SwitchState(gameover);
-		}
-	}
+
+    //Update smoke effect if it's active
+
+    /*
+    if (smokeEmitter.emit) {
+        smokeEmitter.update(delta * 0.01);
+        currSmokeTime += delta;
+        if (currSmokeTime >= smokeTime) {
+            //Go to gameover
+            smokeEmitter.emit = false;
+            SwitchState(gameover);
+        }
+    }
+*/
 
 }
 
@@ -474,9 +477,9 @@ function createMap() {
     mapList.push(rock2);
 
     let rock3 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
-    rock2.x = app.renderer.width / 2;
-    rock2.y = app.renderer.height / 2;
-    mapList.push(rock2);
+    rock3.x = app.renderer.width / 2;
+    rock3.y = app.renderer.height / 2;
+    mapList.push(rock3);
 
 
     for (let i = 0; i < mapList.length; i++)
@@ -533,7 +536,7 @@ function RemoveBullet(bullet) {
 function KillPlayer(deadPlayer) {
     Howler.unload();
 
-	//Set up gameover text based on dead player
+    //Set up gameover text based on dead player
     let titleText = new PIXI.Text();
     if (deadPlayer == 2)
         titleText = new PIXI.Text("White Hat Wins!", titleStyle);
@@ -543,7 +546,10 @@ function KillPlayer(deadPlayer) {
     titleText.position.set(app.renderer.width / 2, 400);
     goContainer.addChild(titleText);
 
-    smokeEmitter.emit = true;
+    smokeEmitter.updateSpawnPos(players[deadPlayer - 1].sprite.x, players[deadPlayer - 1].sprite.y);
+    smokeEmitter.playOnce(SwitchState(gameover));
+
+
 }
 
 
@@ -584,7 +590,7 @@ function Collisions() {
 
         //Map-Bullet collisions
         for (var j = 0; j < mapList.length; j++)
-        	//Make sure bullet still exists before checking
+        //Make sure bullet still exists before checking
             if (bulletList[i] && b.hit(bulletList[i].sprite, mapList[j])) {
             RemoveBullet(bulletList[i]);
             break;
