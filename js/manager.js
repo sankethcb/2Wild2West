@@ -21,22 +21,22 @@ let instructContainer = new PIXI.Container();
 let gameContainer = new PIXI.Container();
 let goContainer = new PIXI.Container();
 let fontStyle = new PIXI.TextStyle({
-	fontFamily: "Edmunds",
-	fontSize: 100,
-	fill: "black",
-	stroke: 'white'
+    fontFamily: "Edmunds",
+    fontSize: 100,
+    fill: "black",
+    stroke: 'white'
 });
 let titleStyle = new PIXI.TextStyle({
-	fontFamily: "Edmunds",
-	fontSize: 100,
-	fill: "black",
-	stroke: 'white',
-	strokeThickness: 4,
-	dropShadow: true,
-	dropShadowColor: "#000000",
-	dropShadowBlur: 6,
-	dropShadowAngle: Math.PI / 6,
-	dropShadowDistance: 4
+    fontFamily: "Edmunds",
+    fontSize: 100,
+    fill: "black",
+    stroke: 'white',
+    strokeThickness: 4,
+    dropShadow: true,
+    dropShadowColor: "#000000",
+    dropShadowBlur: 6,
+    dropShadowAngle: Math.PI / 6,
+    dropShadowDistance: 4
 });
 let controlText;
 
@@ -45,532 +45,534 @@ let b = new Bump(PIXI);
 
 //Audio variables
 let menuMusic = new Howl({
-	src: ['./audio/menuLoop.wav'],
-	volume: 0.4,
-	loop: true
+    src: ['./audio/menuLoop.wav'],
+    volume: 0.4,
+    loop: true
 });
 
 //Initializes manager itself
 function startManager() {
-	setGamepadConnectionEvents();
-	app.ticker.add(delta => gameLoop(delta))
+    setGamepadConnectionEvents();
+    app.ticker.add(delta => gameLoop(delta))
 
-	if (SKIP_MENU) {
-		state = play;
-		InitGame(2);
-		return;
-	}
-	loadBG();
-	createMap();
+    if (SKIP_MENU) {
+        state = play;
+        InitGame(2);
+        return;
+    }
+    loadBG();
+    createMap();
 
-	//Set up containers for the menus
-	InitInstructions(); 
-	InitGO();
-	InitMenu();
+    //Set up containers for the menus
+    InitInstructions();
+    InitGO();
+    InitMenu();
 
 }
 
 //Load the tiling background
 function loadBG() {
-	bg = new PIXI.extras.TilingSprite(PIXI.loader.resources['sand'].texture, app.renderer.width, app.renderer.height);
-	app.stage.addChild(bg);
+    bg = new PIXI.extras.TilingSprite(PIXI.loader.resources['sand'].texture, app.renderer.width, app.renderer.height);
+    app.stage.addChild(bg);
 }
 
 //Wrapper to run the proper loop for the proper game state
 function gameLoop(delta) {
-	state(delta);
+    state(delta);
 }
 
 //The loop when at the menu
 function menu(delta) {
-	pollGamepads();
-	controlText.text = "Controllers Connected: " + numPads;
+    pollGamepads();
+    controlText.text = "Controllers Connected: " + numPads;
 
-	//Check if 1st controller changes to game or instructions
-	if(numPads > 0){ //Avoid querying gamepad that doesn't exist
-		if(gamepads[0].buttons[0].pressed)
-			SwitchState(play);
-		if(gamepads[0].buttons[3].pressed)
-			SwitchState(instructions);
-	}
+    //Check if 1st controller changes to game or instructions
+    if (numPads > 0) { //Avoid querying gamepad that doesn't exist
+        if (gamepads[0].buttons[0].pressed)
+            SwitchState(play);
+        if (gamepads[0].buttons[3].pressed)
+            SwitchState(instructions);
+    }
 
 }
 
 //The loop when at the instructions
 function instructions(delta) {
-	pollGamepads();
+    pollGamepads();
 
-	//Check if 1st controller changes back to menu
-	if(numPads > 0){
-		if(gamepads[0].buttons[1].pressed)
-			SwitchState(menu);
-	}
+    //Check if 1st controller changes back to menu
+    if (numPads > 0) {
+        if (gamepads[0].buttons[1].pressed)
+            SwitchState(menu);
+    }
 }
 
 //The loop when in the play state
 function play(delta) {
-	pollGamepads();
+    pollGamepads();
 
-	for (let i = 0; i < players.length; i++) {
-		players[i].update(delta);
-	}
-	for (let i = 0; i < bulletList.length; i++) {
-		bulletList[i].move(delta);
-		if (!bulletList[i].inBounds)
-			RemoveBullet(bulletList[i]);
-	}
-	Collisions();
+    for (let i = 0; i < players.length; i++) {
+        players[i].update(delta);
+    }
+    for (let i = 0; i < bulletList.length; i++) {
+        bulletList[i].move(delta);
+        if (!bulletList[i].inBounds)
+            RemoveBullet(bulletList[i]);
+    }
+    Collisions();
+    deadPlayer = 1;
+
 }
 
 function gameover() {
-	pollGamepads();
+    pollGamepads();
 
-	//Check if 1st controller changes back to menu
-	if(numPads > 0){
-		if(gamepads[0].buttons[1].pressed)
-			SwitchState(menu);
-	}
+    //Check if 1st controller changes back to menu
+    if (numPads > 0) {
+        if (gamepads[0].buttons[1].pressed)
+            SwitchState(menu);
+    }
 
 }
 
 
 function SwitchState(nextState) {
-	switch (nextState) {
-		case play:
-			//Don't allow the game to start if there are no gamepads
-			if (numPads == 0) {
-				let warnText = new PIXI.Text('Please connect at least 1 controller to play.', fontStyle);
-				warnText.position.set(controlText.x, controlText.y + 50);
-				menuContainer.addChild(warnText);
-				return;
-			}
-			menuMusic.stop();
-			InitGame(numPads > 2 ? 2 : numPads);
-			clearCanvas();
-			app.stage.addChild(gameContainer);
-			state = play;
-			break;
-		case menu:
-			clearCanvas();
-			app.stage.addChild(menuContainer);
-			if (!menuMusic.playing())
-				menuMusic.play();
-				state = menu;
-			break;
-		case instructions:
-			clearCanvas();
-			app.stage.addChild(instructContainer);
-			state = instructions;
-			break;
-		case gameover:
-			clearCanvas();
-			app.stage.addChild(goContainer);
-			state = gameover;
-			break;
-					 }
+    switch (nextState) {
+        case play:
+            //Don't allow the game to start if there are no gamepads
+            if (numPads == 0) {
+                let warnText = new PIXI.Text('Please connect at least 1 controller to play.', fontStyle);
+                warnText.position.set(controlText.x, controlText.y + 50);
+                menuContainer.addChild(warnText);
+                return;
+            }
+            menuMusic.stop();
+            InitGame(numPads > 2 ? 2 : numPads);
+            clearCanvas();
+            app.stage.addChild(gameContainer);
+            state = play;
+            break;
+        case menu:
+            clearCanvas();
+            app.stage.addChild(menuContainer);
+            if (!menuMusic.playing())
+                menuMusic.play();
+            state = menu;
+            break;
+        case instructions:
+            clearCanvas();
+            app.stage.addChild(instructContainer);
+            state = instructions;
+            break;
+        case gameover:
+            clearCanvas();
+            app.stage.addChild(goContainer);
+            state = gameover;
+            break;
+    }
 }
 
 //Clears all containers off the canvas
 function clearCanvas() {
-	app.stage.removeChild(menuContainer);
-	app.stage.removeChild(instructContainer);
-	app.stage.removeChild(gameContainer);
-	app.stage.removeChild(goContainer);
+    app.stage.removeChild(menuContainer);
+    app.stage.removeChild(instructContainer);
+    app.stage.removeChild(gameContainer);
+    app.stage.removeChild(goContainer);
 }
 
 //Start up the main menu with all graphics
 function InitMenu() {
-	//Title Message
-	let titleText = new PIXI.Text("2 Wild 2 West", titleStyle);
-	titleText.anchor.set(0.5);
-	titleText.position.set(app.renderer.width / 2, 200);
-	menuContainer.addChild(titleText);
+    //Title Message
+    let titleText = new PIXI.Text("2 Wild 2 West", titleStyle);
+    titleText.anchor.set(0.5);
+    titleText.position.set(app.renderer.width / 2, 200);
+    menuContainer.addChild(titleText);
 
-	//Controller Status
-	controlText = new PIXI.Text("Controllers Connected: " + numPads, fontStyle);
-	controlText.position.set(100, app.renderer.height - (app.renderer.height / 6));
-	app.stage.addChild(controlText);
-	menuContainer.addChild(controlText);
+    //Controller Status
+    controlText = new PIXI.Text("Controllers Connected: " + numPads, fontStyle);
+    controlText.position.set(100, app.renderer.height - (app.renderer.height / 6));
+    app.stage.addChild(controlText);
+    menuContainer.addChild(controlText);
 
-	//Star Sprite
-	let starButton = new PIXI.Sprite(PIXI.loader.resources["star"].texture);
-	starButton.scale.x = 0.2;
-	starButton.scale.y = 0.2;
-	starButton.x = -starButton.width / 2;
-	starButton.y = -110;
+    //Star Sprite
+    let starButton = new PIXI.Sprite(PIXI.loader.resources["star"].texture);
+    starButton.scale.x = 0.2;
+    starButton.scale.y = 0.2;
+    starButton.x = -starButton.width / 2;
+    starButton.y = -110;
 
-	//Button Text
-	fontStyle.fontSize = 50;
-	let buttonMessage = new PIXI.Text("Start", fontStyle);
-	buttonMessage.anchor.set(0.5);
+    //Button Text
+    fontStyle.fontSize = 50;
+    let buttonMessage = new PIXI.Text("Start", fontStyle);
+    buttonMessage.anchor.set(0.5);
 
-	//A Button
-	let aButton = new PIXI.Sprite(PIXI.loader.resources["a"].texture);
-	aButton.anchor.set(0.5);
-	aButton.scale.x = 0.02;
-	aButton.scale.y = 0.02;
-	aButton.y = 40;
+    //A Button
+    let aButton = new PIXI.Sprite(PIXI.loader.resources["a"].texture);
+    aButton.anchor.set(0.5);
+    aButton.scale.x = 0.02;
+    aButton.scale.y = 0.02;
+    aButton.y = 40;
 
-	//Add to start container and positioning
-	let startContainer = new PIXI.Container();
-	startContainer.addChild(starButton);
-	startContainer.addChild(buttonMessage);
-	startContainer.addChild(aButton);
-	startContainer.x = app.renderer.width / 2;
-	startContainer.y = titleText.position.y + 200;
+    //Add to start container and positioning
+    let startContainer = new PIXI.Container();
+    startContainer.addChild(starButton);
+    startContainer.addChild(buttonMessage);
+    startContainer.addChild(aButton);
+    startContainer.x = app.renderer.width / 2;
+    startContainer.y = titleText.position.y + 200;
 
-	//Make it interactable
-	startContainer.interactive = true;
-	startContainer.buttonMode = true;
-	startContainer.on('pointerdown', (event) => {
-		SwitchState(play);
-	});
+    //Make it interactable
+    startContainer.interactive = true;
+    startContainer.buttonMode = true;
+    startContainer.on('pointerdown', (event) => {
+        SwitchState(play);
+    });
 
-	//Instruction button
-	let tutButton = new PIXI.Text("Instructions", fontStyle);
-	tutButton.anchor.set(0.5);
-	tutButton.x = app.renderer.width / 2;
-	tutButton.y = 600;
-	tutButton.interactive = true;
-	tutButton.buttonMode = true;
-	tutButton.on('pointerdown', (event) => {
-		SwitchState(instructions);
-	});
+    //Instruction button
+    let tutButton = new PIXI.Text("Instructions", fontStyle);
+    tutButton.anchor.set(0.5);
+    tutButton.x = app.renderer.width / 2;
+    tutButton.y = 600;
+    tutButton.interactive = true;
+    tutButton.buttonMode = true;
+    tutButton.on('pointerdown', (event) => {
+        SwitchState(instructions);
+    });
 
-	//Y Button
-	let yButton = new PIXI.Sprite(PIXI.loader.resources["y"].texture);
-	yButton.anchor.set(0.5);
-	yButton.scale.x = 0.02;
-	yButton.scale.y = 0.02;
-	yButton.y = 50;
+    //Y Button
+    let yButton = new PIXI.Sprite(PIXI.loader.resources["y"].texture);
+    yButton.anchor.set(0.5);
+    yButton.scale.x = 0.02;
+    yButton.scale.y = 0.02;
+    yButton.y = 50;
 
-	tutButton.addChild(yButton);
+    tutButton.addChild(yButton);
 
-	menuContainer.addChild(startContainer);
-	menuContainer.addChild(tutButton);
+    menuContainer.addChild(startContainer);
+    menuContainer.addChild(tutButton);
 
-	SwitchState(menu); //Switch over to the menu when it loads
+    SwitchState(menu); //Switch over to the menu when it loads
 }
 
 function InitInstructions() {
 
-	let instructText = new PIXI.Text('Instructions', titleStyle);
-	instructText.anchor.set(0.5);
-	instructText.position.set(app.renderer.width / 2, 100);
+    let instructText = new PIXI.Text('Instructions', titleStyle);
+    instructText.anchor.set(0.5);
+    instructText.position.set(app.renderer.width / 2, 100);
 
-	//Variables to line up the instructions
-	let bottomMargin = 100;
-	let textX = app.renderer.width / 2 - 100;
-	let currY = 300;
-	let textImgGap = 125;
+    //Variables to line up the instructions
+    let bottomMargin = 100;
+    let textX = app.renderer.width / 2 - 100;
+    let currY = 300;
+    let textImgGap = 125;
 
-	//Instructions text and images
-	//Left Stick
-	let moveText = new PIXI.Text('Move:', fontStyle);
-	moveText.anchor.set(0.5);
-	moveText.position.set(textX, currY);
-	currY += bottomMargin;
+    //Instructions text and images
+    //Left Stick
+    let moveText = new PIXI.Text('Move:', fontStyle);
+    moveText.anchor.set(0.5);
+    moveText.position.set(textX, currY);
+    currY += bottomMargin;
 
-	let moveImg = new PIXI.Sprite(PIXI.loader.resources['lstick'].texture);
-	moveImg.anchor.set(0.5);
-	moveImg.scale.x = 0.04;
-	moveImg.scale.y = 0.04;
-	moveImg.x = moveText.position.x + textImgGap;
-	moveImg.y = moveText.position.y;
+    let moveImg = new PIXI.Sprite(PIXI.loader.resources['lstick'].texture);
+    moveImg.anchor.set(0.5);
+    moveImg.scale.x = 0.04;
+    moveImg.scale.y = 0.04;
+    moveImg.x = moveText.position.x + textImgGap;
+    moveImg.y = moveText.position.y;
 
-	//Right Stick
-	let aimText = new PIXI.Text('Aim:', fontStyle);
-	aimText.anchor.set(0.5);
-	aimText.position.set(textX, currY);
-	currY += bottomMargin;
+    //Right Stick
+    let aimText = new PIXI.Text('Aim:', fontStyle);
+    aimText.anchor.set(0.5);
+    aimText.position.set(textX, currY);
+    currY += bottomMargin;
 
-	let aimImg = new PIXI.Sprite(PIXI.loader.resources['rstick'].texture);
-	aimImg.anchor.set(0.5);
-	aimImg.scale.x = 0.04;
-	aimImg.scale.y = 0.04;
-	aimImg.x = aimText.position.x + textImgGap;
-	aimImg.y = aimText.position.y;
+    let aimImg = new PIXI.Sprite(PIXI.loader.resources['rstick'].texture);
+    aimImg.anchor.set(0.5);
+    aimImg.scale.x = 0.04;
+    aimImg.scale.y = 0.04;
+    aimImg.x = aimText.position.x + textImgGap;
+    aimImg.y = aimText.position.y;
 
-	//Right Trigger
-	let shootText = new PIXI.Text('Shoot:', fontStyle);
-	shootText.anchor.set(0.5);
-	shootText.position.set(textX, currY);
-	currY += bottomMargin;
+    //Right Trigger
+    let shootText = new PIXI.Text('Shoot:', fontStyle);
+    shootText.anchor.set(0.5);
+    shootText.position.set(textX, currY);
+    currY += bottomMargin;
 
-	let shootImg = new PIXI.Sprite(PIXI.loader.resources['rt'].texture);
-	shootImg.anchor.set(0.5);
-	shootImg.scale.x = 1;
-	shootImg.scale.y = 1;
-	shootImg.x = shootText.position.x + textImgGap;
-	shootImg.y = shootText.position.y;
+    let shootImg = new PIXI.Sprite(PIXI.loader.resources['rt'].texture);
+    shootImg.anchor.set(0.5);
+    shootImg.scale.x = 1;
+    shootImg.scale.y = 1;
+    shootImg.x = shootText.position.x + textImgGap;
+    shootImg.y = shootText.position.y;
 
-	//X
-	let reloadText = new PIXI.Text('Reload:', fontStyle);
-	reloadText.anchor.set(0.5);
-	reloadText.position.set(textX, currY);
-	currY += bottomMargin;
+    //X
+    let reloadText = new PIXI.Text('Reload:', fontStyle);
+    reloadText.anchor.set(0.5);
+    reloadText.position.set(textX, currY);
+    currY += bottomMargin;
 
-	let reloadImg = new PIXI.Sprite(PIXI.loader.resources['x'].texture);
-	reloadImg.anchor.set(0.5);
-	reloadImg.scale.x = 0.04;
-	reloadImg.scale.y = 0.04;
-	reloadImg.x = reloadText.position.x + textImgGap;
-	reloadImg.y = reloadText.position.y;
+    let reloadImg = new PIXI.Sprite(PIXI.loader.resources['x'].texture);
+    reloadImg.anchor.set(0.5);
+    reloadImg.scale.x = 0.04;
+    reloadImg.scale.y = 0.04;
+    reloadImg.x = reloadText.position.x + textImgGap;
+    reloadImg.y = reloadText.position.y;
 
-	//Back to menu button
-	let backButton = new PIXI.Text("Back to Menu", fontStyle);
-	backButton.anchor.set(0.5);
-	backButton.x = app.renderer.width / 2;
-	backButton.y = 800;
-	backButton.interactive = true;
-	backButton.buttonMode = true;
-	backButton.on('pointerdown', (event) => {
-		SwitchState(menu);
-	});
+    //Back to menu button
+    let backButton = new PIXI.Text("Back to Menu", fontStyle);
+    backButton.anchor.set(0.5);
+    backButton.x = app.renderer.width / 2;
+    backButton.y = 800;
+    backButton.interactive = true;
+    backButton.buttonMode = true;
+    backButton.on('pointerdown', (event) => {
+        SwitchState(menu);
+    });
 
-	//B button for menu
-	let bButton = new PIXI.Sprite(PIXI.loader.resources['b'].texture);
-	bButton.anchor.set(0.5);
-	bButton.scale.x = 0.02;
-	bButton.scale.y = 0.02;
-	bButton.y = 50;
-	backButton.addChild(bButton);
+    //B button for menu
+    let bButton = new PIXI.Sprite(PIXI.loader.resources['b'].texture);
+    bButton.anchor.set(0.5);
+    bButton.scale.x = 0.02;
+    bButton.scale.y = 0.02;
+    bButton.y = 50;
+    backButton.addChild(bButton);
 
 
-	//Add sprites to instruction container
-	instructContainer.addChild(instructText);
-	instructContainer.addChild(moveText);
-	instructContainer.addChild(moveImg);
-	instructContainer.addChild(aimText);
-	instructContainer.addChild(aimImg);
-	instructContainer.addChild(shootText);
-	instructContainer.addChild(shootImg);
-	instructContainer.addChild(reloadText);
-	instructContainer.addChild(reloadImg);
-	instructContainer.addChild(backButton);
+    //Add sprites to instruction container
+    instructContainer.addChild(instructText);
+    instructContainer.addChild(moveText);
+    instructContainer.addChild(moveImg);
+    instructContainer.addChild(aimText);
+    instructContainer.addChild(aimImg);
+    instructContainer.addChild(shootText);
+    instructContainer.addChild(shootImg);
+    instructContainer.addChild(reloadText);
+    instructContainer.addChild(reloadImg);
+    instructContainer.addChild(backButton);
 }
 
 //Start up the core game when in the play state
 function InitGame(numPlayers) {
-	if (numPlayers == 0) {
-		return;
-	}
+    if (numPlayers == 0) {
+        return;
+    }
 
-	for (let i = 0; i < mapList.length; i++) {
-		gameContainer.addChild(mapList[i]);
+    for (let i = 0; i < mapList.length; i++) {
+        gameContainer.addChild(mapList[i]);
 
-	}
-	//Init all players
-	for (let i = 0; i < numPlayers; i++) {
-		players[i] = new Cowboy(i + 1);
+    }
+    //Init all players
+    for (let i = 0; i < numPlayers; i++) {
+        players[i] = new Cowboy(i + 1);
 
-		gameContainer.addChild(players[i].sprite);
-		gameContainer.addChild(players[i].revolver);
-	}
+        gameContainer.addChild(players[i].sprite);
+        gameContainer.addChild(players[i].revolver);
+    }
 }
 
 function Reset() {
 
-	for (let i = 0; i < bulletList.length; i++)
-		RemoveBullet(bulletList[i]);
+    for (let i = 0; i < bulletList.length; i++)
+        RemoveBullet(bulletList[i]);
 
-	for (let i = 0; i < players.length; i++) {
-		gameContainer.removeChild(players[i].sprite);
-		gameContainer.removeChild(players[i].revolver);
+    for (let i = 0; i < players.length; i++) {
+        gameContainer.removeChild(players[i].sprite);
+        gameContainer.removeChild(players[i].revolver);
 
-		players[i] = null;
-		players[i] = new Cowboy(i + 1);
 
-		gameContainer.addChild(players[i].sprite);
-		gameContainer.addChild(players[i].revolver);
-	}
-	SwitchState(menu);
+        players[i] = new Cowboy(i + 1);
+
+        gameContainer.addChild(players[i].sprite);
+        gameContainer.addChild(players[i].revolver);
+    }
+    SwitchState(menu);
 }
 
 function createMap() {
-	let barrel1 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
-	barrel1.x = 500;
-	barrel1.y = 500;
-	mapList.push(barrel1);
+    let barrel1 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel1.x = 500;
+    barrel1.y = 500;
+    mapList.push(barrel1);
 
-	let barrel2 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
-	barrel2.x = app.renderer.width - 500;
-	barrel2.y = app.renderer.height - 500;
-	mapList.push(barrel2);
+    let barrel2 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel2.x = app.renderer.width - 500;
+    barrel2.y = app.renderer.height - 500;
+    mapList.push(barrel2);
 
-	let barrel3 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
-	barrel3.x = 850;
-	barrel3.y = 900;
-	mapList.push(barrel3);
+    let barrel3 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel3.x = 850;
+    barrel3.y = 900;
+    mapList.push(barrel3);
 
-	let barrel4 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
-	barrel4.x = app.renderer.width - 850;
-	barrel4.y = app.renderer.height - 900;
-	mapList.push(barrel4);
+    let barrel4 = new PIXI.Sprite(PIXI.loader.resources['barrel'].texture);
+    barrel4.x = app.renderer.width - 850;
+    barrel4.y = app.renderer.height - 900;
+    mapList.push(barrel4);
 
-	let chariot1 = new PIXI.Sprite(PIXI.loader.resources['chariot'].texture);
-	chariot1.x = 800;
-	chariot1.y = 250;
-	chariot1.scale.x = 2;
-	chariot1.scale.y = 2;
-	mapList.push(chariot1);
+    let chariot1 = new PIXI.Sprite(PIXI.loader.resources['chariot'].texture);
+    chariot1.x = 800;
+    chariot1.y = 250;
+    chariot1.scale.x = 2;
+    chariot1.scale.y = 2;
+    mapList.push(chariot1);
 
-	let chariot2 = new PIXI.Sprite(PIXI.loader.resources['chariot'].texture);
-	chariot2.x = app.renderer.width - 800;
-	chariot2.y = app.renderer.height - 250;
-	chariot2.scale.x = 2;
-	chariot2.scale.y = 2;
-	mapList.push(chariot2);
-
-
-	let cactus1 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
-	cactus1.x = 600;
-	cactus1.y = 800;
-	mapList.push(cactus1);
-
-	let cactus2 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
-	cactus2.x = app.renderer.width - 600;
-	cactus2.y = app.renderer.height - 800;
-	mapList.push(cactus2);
-
-	let cactus3 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
-	cactus3.x = 700;
-	cactus3.y = 400;
-	mapList.push(cactus3);
-
-	let cactus4 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
-	cactus4.x = app.renderer.width - 700;
-	cactus4.y = app.renderer.height - 400;
-	mapList.push(cactus4);
+    let chariot2 = new PIXI.Sprite(PIXI.loader.resources['chariot'].texture);
+    chariot2.x = app.renderer.width - 800;
+    chariot2.y = app.renderer.height - 250;
+    chariot2.scale.x = 2;
+    chariot2.scale.y = 2;
+    mapList.push(chariot2);
 
 
-	let rock1 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
-	rock1.x = 300;
-	rock1.y = 200;
-	mapList.push(rock1);
+    let cactus1 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus1.x = 600;
+    cactus1.y = 800;
+    mapList.push(cactus1);
 
-	let rock2 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
-	rock2.x = app.renderer.width - 300;
-	rock2.y = app.renderer.height - 200;
-	mapList.push(rock2);
+    let cactus2 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus2.x = app.renderer.width - 600;
+    cactus2.y = app.renderer.height - 800;
+    mapList.push(cactus2);
 
-	let rock3 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
-	rock2.x = app.renderer.width / 2;
-	rock2.y = app.renderer.height / 2;
-	mapList.push(rock2);
+    let cactus3 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus3.x = 700;
+    cactus3.y = 400;
+    mapList.push(cactus3);
+
+    let cactus4 = new PIXI.Sprite(PIXI.loader.resources['cactus'].texture);
+    cactus4.x = app.renderer.width - 700;
+    cactus4.y = app.renderer.height - 400;
+    mapList.push(cactus4);
 
 
-	for (let i = 0; i < mapList.length; i++)
-		mapList[i].anchor.set(0.5);
+    let rock1 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
+    rock1.x = 300;
+    rock1.y = 200;
+    mapList.push(rock1);
+
+    let rock2 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
+    rock2.x = app.renderer.width - 300;
+    rock2.y = app.renderer.height - 200;
+    mapList.push(rock2);
+
+    let rock3 = new PIXI.Sprite(PIXI.loader.resources['rock'].texture);
+    rock2.x = app.renderer.width / 2;
+    rock2.y = app.renderer.height / 2;
+    mapList.push(rock2);
+
+
+    for (let i = 0; i < mapList.length; i++)
+        mapList[i].anchor.set(0.5);
 }
 
 //Initialize game over ui
 function InitGO() {
-	//Back to menu button
-	let backButton = new PIXI.Text("Back to Menu", fontStyle);
-	backButton.anchor.set(0.5);
-	backButton.x = app.renderer.width / 2;
-	backButton.y = 800;
-	backButton.interactive = true;
-	backButton.buttonMode = true;
-	backButton.on('pointerdown', (event) => {
-		Reset();
-	});
+    //Back to menu button
+    let backButton = new PIXI.Text("Back to Menu", fontStyle);
+    backButton.anchor.set(0.5);
+    backButton.x = app.renderer.width / 2;
+    backButton.y = 800;
+    backButton.interactive = true;
+    backButton.buttonMode = true;
+    backButton.on('pointerdown', (event) => {
+        Reset();
+    });
 
-	//B button back to menu
-	let bButton = new PIXI.Sprite(PIXI.loader.resources['b'].texture);
-	bButton.anchor.set(0.5);
-	bButton.scale.x = 0.02;
-	bButton.scale.y = 0.02;
-	bButton.y = 50;
-	backButton.addChild(bButton);
-	
-	//Developer names
-	let devNames = new PIXI.Text("Created by William Montgomery and Sanketh Bhat", fontStyle);
-	devNames.x = 50;
-	devNames.y = 20;
+    //B button back to menu
+    let bButton = new PIXI.Sprite(PIXI.loader.resources['b'].texture);
+    bButton.anchor.set(0.5);
+    bButton.scale.x = 0.02;
+    bButton.scale.y = 0.02;
+    bButton.y = 50;
+    backButton.addChild(bButton);
 
-	goContainer.addChild(backButton);
-	goContainer.addChild(devNames);
+    //Developer names
+    let devNames = new PIXI.Text("Created by William Montgomery and Sanketh Bhat", fontStyle);
+    devNames.x = 50;
+    devNames.y = 20;
+
+    goContainer.addChild(backButton);
+    goContainer.addChild(devNames);
 }
 
 //Add a bullet to the bullet list
 function AddBullet(bullet) {
-	bulletList.push(bullet);
-	gameContainer.addChild(bullet.sprite);
+    bulletList.push(bullet);
+    gameContainer.addChild(bullet.sprite);
 }
 
 //Remove bullet from the bullet list
 function RemoveBullet(bullet) {
-	let index = bulletList.indexOf(bullet);
-	if (index != -1) {
-		gameContainer.removeChild(bullet.sprite);
-		bulletList.splice(index, 1);
-		bullet = null;
-	}
+    let index = bulletList.indexOf(bullet);
+    if (index != -1) {
+        gameContainer.removeChild(bullet.sprite);
+        bulletList.splice(index, 1);
+        bullet = null;
+    }
 }
 
 function KillPlayer() {
-	Howler.unload();
+    Howler.unload();
 
-	let titleText = new PIXI.Text();
-	if (deadPlayer == 2)
-		titleText = new PIXI.Text("White Hat Wins!", titleStyle);
-	if (deadPlayer == 1)
-		titleText = new PIXI.Text("Black Hat Wins!", titleStyle);
-	titleText.anchor.set(0.5);
-	titleText.position.set(app.renderer.width / 2, 400);
-	goContainer.addChild(titleText);
+    let titleText = new PIXI.Text();
+    if (deadPlayer == 2)
+        titleText = new PIXI.Text("White Hat Wins!", titleStyle);
+    if (deadPlayer == 1)
+        titleText = new PIXI.Text("Black Hat Wins!", titleStyle);
+    titleText.anchor.set(0.5);
+    titleText.position.set(app.renderer.width / 2, 400);
+    goContainer.addChild(titleText);
 
-	app.stage.addChild(goContainer);
+    app.stage.addChild(goContainer);
 
-	SwitchState(gameover);
+    SwitchState(gameover);
 }
 
 
 //Game Collisions
 function Collisions() {
 
-	if (players[1] != null) {
-		//Player - Player intersection
-		b.hit(players[0].sprite, players[1].sprite, true);
-		b.hit(players[1].sprite, players[0].sprite, true);
-		//Player - map intersection
-		b.hit(players[1].sprite, mapList, true);
-	}
-	//Player - map intersection
-	b.hit(players[0].sprite, mapList, true);
+    if (players[1] != null) {
+        //Player - Player intersection
+        b.hit(players[0].sprite, players[1].sprite, true);
+        b.hit(players[1].sprite, players[0].sprite, true);
+        //Player - map intersection
+        b.hit(players[1].sprite, mapList, true);
+    }
+    //Player - map intersection
+    b.hit(players[0].sprite, mapList, true);
 
 
-	for (var i = 0; i < bulletList.length; i++) {
-		//Player  - bullet collisions
-		if (bulletList[i].playerNum == 2) {
-			if (b.hit(players[0].sprite, bulletList[i].sprite)) {
-				RemoveBullet(bulletList[i]);
-				players[0].HP--;
-				if (players[0].HP-- == 0) {
-					deadPlayer = 1;
-					KillPlayer();
-				}
-			}
-		} else if (bulletList[i].playerNum == 1) {
-			if (players[1] != null)
-				if (b.hit(players[1].sprite, bulletList[i].sprite)) {
-					RemoveBullet(bulletList[i]);
-					players[1].HP--;
-					if (players[1].HP-- == 0) {
-						deadPlayer = 2;
-						KillPlayer();
-					}
-				}
-		}
+    for (var i = 0; i < bulletList.length; i++) {
+        //Player  - bullet collisions
+        if (bulletList[i].playerNum == 2) {
+            if (b.hit(players[0].sprite, bulletList[i].sprite)) {
+                RemoveBullet(bulletList[i]);
+                players[0].HP--;
+                if (players[0].HP-- == 0) {
+                    deadPlayer = 1;
+                    KillPlayer();
+                }
+            }
+        } else if (bulletList[i].playerNum == 1) {
+            if (players[1] != null)
+                if (b.hit(players[1].sprite, bulletList[i].sprite)) {
+                    RemoveBullet(bulletList[i]);
+                    players[1].HP--;
+                    if (players[1].HP-- == 0) {
+                        deadPlayer = 2;
+                        KillPlayer();
+                    }
+                }
+        }
 
-		//Map-Bullet collisions
-		for (var j = 0; j < mapList.length; j++)
-			//Make sure bullet still exists before checking
-			if (bulletList[i] && b.hit(bulletList[i].sprite, mapList[j])) {
-				RemoveBullet(bulletList[i]);
-				break;
-			}
-	}
+        //Map-Bullet collisions
+        for (var j = 0; j < mapList.length; j++)
+        //Make sure bullet still exists before checking
+            if (bulletList[i] && b.hit(bulletList[i].sprite, mapList[j])) {
+            RemoveBullet(bulletList[i]);
+            break;
+        }
+    }
 }
