@@ -52,6 +52,22 @@ let menuMusic = new Howl({
     loop: true
 });
 
+let deathSound = new Howl({
+	src: ['./audio/death.mp3'],
+	volume: 0.7
+});
+
+let hitSound1  = new Howl({
+	src: ['./audio/woodhit1.mp3'],
+	volume: 1
+});
+let hitSound2  = new Howl({
+	src: ['./audio/woodhit2.mp3'],
+	volume: 1
+});
+
+let hitSounds = [hitSound1, hitSound2]; //Hold different hit sounds to choose from when bullets hit the map
+
 //Particle variables
 let smokeTime = 250; //Time smoke effect happens
 let currSmokeTime = 0; //Current time smoke effect has been running
@@ -149,7 +165,6 @@ function gameover() {
             Reset();
         }
     }
-
 }
 
 
@@ -522,8 +537,8 @@ function KillPlayer(deadPlayer) {
     //Set up gameover text based on dead player
 
     for (let i = 0; i < bulletList.length; i++) {
-        if (bulletList[i].playerNum = deadPlayer)
-            RemoveBullet(bullet[i]);
+        if (bulletList[i].playerNum == deadPlayer)
+            RemoveBullet(bulletList[i]);
     }
 
     let titleText = new PIXI.Text();
@@ -537,7 +552,9 @@ function KillPlayer(deadPlayer) {
 
     smokeEmitter.resetPositionTracking();
     smokeEmitter.updateSpawnPos(players[deadPlayer - 1].sprite.x, players[deadPlayer - 1].sprite.y);
-    smokeEmitter.emit = true; //GameOver will happen in update after 
+    smokeEmitter.emit = true; //GameOver will happen in update after
+	
+	deathSound.play();
 }
 
 
@@ -561,7 +578,7 @@ function Collisions() {
             if (b.hit(players[0].sprite, bulletList[i].sprite)) {
                 RemoveBullet(bulletList[i]);
                 players[0].HP--;
-                if (players[0].HP-- == 0) {
+                if (players[0].HP == 0) {
                     KillPlayer(1);
                 }
             }
@@ -570,7 +587,7 @@ function Collisions() {
                 if (b.hit(players[1].sprite, bulletList[i].sprite)) {
                     RemoveBullet(bulletList[i]);
                     players[1].HP--;
-                    if (players[1].HP-- == 0) {
+                    if (players[1].HP == 0) {
                         KillPlayer(2);
                     }
                 }
@@ -580,7 +597,11 @@ function Collisions() {
         for (var j = 0; j < mapList.length; j++)
         //Make sure bullet still exists before checking
             if (bulletList[i] && b.hit(bulletList[i].sprite, mapList[j])) {
-            RemoveBullet(bulletList[i]);
+			RemoveBullet(bulletList[i]);
+			
+			//Play a hit sound from the hitsounds array
+			let hitIndex = Math.floor(Math.random() * hitSounds.length);
+			hitSounds[hitIndex].play();
             break;
         }
     }

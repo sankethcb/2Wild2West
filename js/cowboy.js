@@ -68,7 +68,8 @@ class Cowboy {
 			this.revolver.position.set(app.renderer.width - this.revolver.width - revolverMargin, app.renderer.height - this.revolver.height - revolverMargin);
 
 			this.shootSound = new Howl({
-				src: ['./audio/shoot2.mp3']
+				src: ['./audio/shoot2.mp3'],
+				volume: 0.7
 			});
 		}
 
