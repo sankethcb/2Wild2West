@@ -47,7 +47,7 @@ let b = new Bump(PIXI);
 
 //Audio variables
 let menuMusic = new Howl({
-    src: ['./audio/menuLoop.wav'],
+    src: ['./audio/menuloop.wav'],
     volume: 0.4,
     loop: true
 });
