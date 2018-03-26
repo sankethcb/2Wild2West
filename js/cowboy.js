@@ -112,6 +112,13 @@ class Cowboy {
 
 		if (this.gamepad === undefined)
 			return;
+		
+		//Check if the player is dead before updating
+		if(this.HP <= 0){
+			this.crosshair.visible = false;
+			this.sprite.visible = false;
+			return;
+		}
 
 		//Movement
 		if (!this.isShooting) {

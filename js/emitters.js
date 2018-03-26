@@ -24,8 +24,8 @@ let smokeEmitter = new PIXI.particles.Emitter(
 			"end": "#e6c45c"
 		},
 		"speed": {
-			"start": 40,
-			"end": 75,
+			"start": 100,
+			"end": 125,
 			"minimumSpeedMultiplier": 1
 		},
 		"acceleration": {
