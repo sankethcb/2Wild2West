@@ -1,6 +1,6 @@
-export { bullet };
+export { Bullet };
 import { app } from './loader.js';
-class bullet {
+class Bullet {
     constructor(cowboy, bf) {
         this.sprite = new PIXI.Sprite(PIXI.loader.resources["bullet"].texture);
         this.sprite.anchor.set(0.5, 0.5);

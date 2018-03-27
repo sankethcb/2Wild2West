@@ -1,4 +1,4 @@
-export { startManager, gameLoop, gameContainer, b, AddBullet };
+export { startManager, gameLoop, gameContainer, b, addBullet };
 import { Bump } from './bump.js';
 import { app } from './loader.js';
 import { gamepads, pollGamepads, setGamepadConnectionEvents, numPads } from './controllers.js';
@@ -53,17 +53,17 @@ let menuMusic = new Howl({
 });
 
 let deathSound = new Howl({
-	src: ['./audio/death.mp3'],
-	volume: 0.7
+    src: ['./audio/death.mp3'],
+    volume: 0.7
 });
 
-let hitSound1  = new Howl({
-	src: ['./audio/woodhit1.mp3'],
-	volume: 1
+let hitSound1 = new Howl({
+    src: ['./audio/woodhit1.mp3'],
+    volume: 1
 });
-let hitSound2  = new Howl({
-	src: ['./audio/woodhit2.mp3'],
-	volume: 1
+let hitSound2 = new Howl({
+    src: ['./audio/woodhit2.mp3'],
+    volume: 1
 });
 
 let hitSounds = [hitSound1, hitSound2]; //Hold different hit sounds to choose from when bullets hit the map
@@ -79,16 +79,16 @@ function startManager() {
 
     if (SKIP_MENU) {
         state = play;
-        InitGame(2);
+        initGame(2);
         return;
     }
     loadBG();
     createMap();
 
     //Set up containers for the menus
-    InitInstructions();
-    InitGO();
-    InitMenu();
+    initInstructions();
+    initGO();
+    initMenu();
 
 }
 
@@ -111,9 +111,9 @@ function menu(delta) {
     //Check if 1st controller changes to game or instructions
     if (numPads > 0) { //Avoid querying gamepad that doesn't exist
         if (gamepads[0].buttons[0].pressed)
-            SwitchState(play);
+            switchState(play);
         if (gamepads[0].buttons[3].pressed)
-            SwitchState(instructions);
+            switchState(instructions);
     }
 
 }
@@ -125,7 +125,7 @@ function instructions(delta) {
     //Check if 1st controller changes back to menu
     if (numPads > 0) {
         if (gamepads[0].buttons[1].pressed)
-            SwitchState(menu);
+            switchState(menu);
     }
 }
 
@@ -139,9 +139,9 @@ function play(delta) {
     for (let i = 0; i < bulletList.length; i++) {
         bulletList[i].move(delta);
         if (!bulletList[i].inBounds)
-            RemoveBullet(bulletList[i]);
+            removeBullet(bulletList[i]);
     }
-    Collisions();
+    collisions();
 
     //Update smoke effect if it's active and switch to game over if it's done
     if (smokeEmitter.emit) {
@@ -149,7 +149,7 @@ function play(delta) {
         currSmokeTime += delta;
         if (currSmokeTime >= smokeTime) {
             smokeEmitter.emit = false;
-            SwitchState(gameover);
+            switchState(gameover);
         }
     }
 
@@ -162,13 +162,13 @@ function gameover() {
     //Check if 1st controller changes back to menu
     if (numPads > 0) {
         if (gamepads[0].buttons[1].pressed) {
-            Reset();
+            reset();
         }
     }
 }
 
 
-function SwitchState(nextState) {
+function switchState(nextState) {
     switch (nextState) {
         case play:
             //Don't allow the game to start if there are no gamepads
@@ -179,7 +179,7 @@ function SwitchState(nextState) {
                 return;
             }
             menuMusic.stop();
-            InitGame(numPads > 2 ? 2 : numPads);
+            initGame(numPads > 2 ? 2 : numPads);
             clearCanvas();
             app.stage.addChild(gameContainer);
             state = play;
@@ -214,7 +214,7 @@ function clearCanvas() {
 }
 
 //Start up the main menu with all graphics
-function InitMenu() {
+function initMenu() {
     //Title Message
     let titleText = new PIXI.Text("2 Wild 2 West", titleStyle);
     titleText.anchor.set(0.5);
@@ -284,10 +284,10 @@ function InitMenu() {
     menuContainer.addChild(startContainer);
     menuContainer.addChild(tutButton);
 
-    SwitchState(menu); //Switch over to the menu when it loads
+    switchState(menu); //Switch over to the menu when it loads
 }
 
-function InitInstructions() {
+function initInstructions() {
 
     let instructText = new PIXI.Text('Instructions', titleStyle);
     instructText.anchor.set(0.5);
@@ -386,7 +386,7 @@ function InitInstructions() {
 }
 
 //Start up the core game when in the play state
-function InitGame(numPlayers) {
+function initGame(numPlayers) {
     if (numPlayers == 0) {
         return;
     }
@@ -410,7 +410,7 @@ function InitGame(numPlayers) {
 }
 
 //Initialize game over ui
-function InitGO() {
+function initGO() {
     //Back to menu button
     let backButton = new PIXI.Text("Back to Menu", fontStyle);
     backButton.anchor.set(0.5);
@@ -419,7 +419,7 @@ function InitGO() {
     backButton.interactive = true;
     backButton.buttonMode = true;
     backButton.on('pointerdown', (event) => {
-        Reset();
+        reset();
     });
 
     //B button back to menu
@@ -517,13 +517,13 @@ function createMap() {
 }
 
 //Add a bullet to the bullet list
-function AddBullet(bullet) {
+function addBullet(bullet) {
     bulletList.push(bullet);
     gameContainer.addChild(bullet.sprite);
 }
 
 //Remove bullet from the bullet list
-function RemoveBullet(bullet) {
+function removeBullet(bullet) {
     let index = bulletList.indexOf(bullet);
     if (index != -1) {
         gameContainer.removeChild(bullet.sprite);
@@ -533,12 +533,12 @@ function RemoveBullet(bullet) {
 }
 
 //Kills player from index passed in and starts process to end the game
-function KillPlayer(deadPlayer) {
+function killPlayer(deadPlayer) {
     //Set up gameover text based on dead player
 
     for (let i = 0; i < bulletList.length; i++) {
         if (bulletList[i].playerNum == deadPlayer)
-            RemoveBullet(bulletList[i]);
+            removeBullet(bulletList[i]);
     }
 
     let titleText = new PIXI.Text();
@@ -553,13 +553,13 @@ function KillPlayer(deadPlayer) {
     smokeEmitter.resetPositionTracking();
     smokeEmitter.updateSpawnPos(players[deadPlayer - 1].sprite.x, players[deadPlayer - 1].sprite.y);
     smokeEmitter.emit = true; //GameOver will happen in update after
-	
-	deathSound.play();
+
+    deathSound.play();
 }
 
 
 //Game Collisions
-function Collisions() {
+function collisions() {
 
     if (players[1] != null) {
         //Player - Player intersection
@@ -597,22 +597,22 @@ function Collisions() {
         for (var j = 0; j < mapList.length; j++)
         //Make sure bullet still exists before checking
             if (bulletList[i] && b.hit(bulletList[i].sprite, mapList[j])) {
-			RemoveBullet(bulletList[i]);
-			
-			//Play a hit sound from the hitsounds array
-			let hitIndex = Math.floor(Math.random() * hitSounds.length);
-			hitSounds[hitIndex].play();
+            RemoveBullet(bulletList[i]);
+
+            //Play a hit sound from the hitsounds array
+            let hitIndex = Math.floor(Math.random() * hitSounds.length);
+            hitSounds[hitIndex].play();
             break;
         }
     }
 }
 
 //Reset game variables
-function Reset() {
+function reset() {
 
     //Remove bullets
     for (let i = 0; i < bulletList.length; i++)
-        RemoveBullet(bulletList[i]);
+        removeBullet(bulletList[i]);
 
     //Remove cowboys
     for (let i = 0; i < players.length; i++) {
@@ -624,5 +624,5 @@ function Reset() {
     smokeEmitter.cleanup();
     currSmokeTime = 0;
 
-    SwitchState(menu);
+    switchState(menu);
 }
