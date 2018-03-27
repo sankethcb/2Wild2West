@@ -171,9 +171,9 @@ function gameover() {
 function switchState(nextState) {
 	switch (nextState) {
 		case play:
-			//Don't allow the game to start if there are no gamepads
-			if (numPads == 0) {
-				let warnText = new PIXI.Text('Please connect at least 1 controller to play.', fontStyle);
+			//Don't allow the game to start if there aren't enough gamepads
+			if (numPads < 2) {
+				let warnText = new PIXI.Text('Please connect 2 controllers to play.', fontStyle);
 				warnText.position.set(controlText.x, controlText.y + 50);
 				menuContainer.addChild(warnText);
 				return;
